@@ -1,41 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   envp_copy.c                                        :+:      :+:    :+:   */
+/*   ft_strncat.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/26 18:13:34 by mazaid            #+#    #+#             */
-/*   Updated: 2025/02/27 21:26:52 by mazaid           ###   ########.fr       */
+/*   Created: 2025/03/01 17:46:56 by mazaid            #+#    #+#             */
+/*   Updated: 2025/03/01 17:47:13 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "libft.h"
 
-int	count_env_vars(char	**envp)
+char	*ft_strncat(char *dest, char *src, unsigned int n)
 {
-	int	count;
+	int i;
+	int j;
 
-	count = 0;
-	while (envp[count])
-		count++;
-	return (count);
-}
-
-void	copy_env(char **envp, t_ms *ms)
-{
-	int	i;
-	int	count;
-
-	count = count_env_vars(envp);
-	ms->envp_cpy = malloc((count + 1) * sizeof(char *));
-	if (!ms->envp_cpy)
-		return ;
 	i = 0;
-	while (i < count)
+	j = 0;
+	while (dest[i] != '\0')
 	{
-		ms->envp_cpy[i] = ft_strdup(envp[i]);
 		i++;
 	}
-	ms->envp_cpy[i] = NULL;
+	while (src[j] != '\0' && n != 0)
+	{
+		dest[i] = src[j];
+		j++;
+		i++;
+		n--;
+	}
+	dest[i] = '\0';
+	return (dest);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 10:57:42 by mazaid            #+#    #+#             */
-/*   Updated: 2024/08/27 15:10:14 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/01 17:47:32 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ char	*ftt_strjoin(char const *s1, char const *s2);
 char	*ft_strtrim(char const *s1, char const *set);
 char	*ft_itoa(int n);
 char	*ft_strmapi(char const *s, char (*f)(unsigned int, char));
+char	*ft_strcat(char *dest, char *src);
+char *ft_strncat(char *dest, char *src, unsigned int n);
 int		ft_memcmp(const void *s1, const void *s2, size_t n);
 int		ft_isalpha(int i);
 int		ft_isdigit(int i);

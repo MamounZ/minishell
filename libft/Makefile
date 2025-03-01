@@ -8,7 +8,7 @@ SRCS = ft_toupper.c ft_tolower.c ft_isalpha.c ft_memset.c ft_bzero.c ft_atoi.c f
 	ft_strlcat.c ft_calloc.c ft_strdup.c ft_strnstr.c ft_substr.c ft_strjoin.c ft_strtrim.c \
 	ft_strmapi.c ft_striteri.c ft_putchar_fd.c ft_putstr_fd.c ft_putendl_fd.c ft_putnbr_fd.c \
 	ft_itoa.c ft_split.c ft_strcmp.c ft_printf.c ft_putadrs.c ft_putchar.c ft_puthex.c ft_putnbr.c ft_putstr.c ft_putunbr.c \
-	get_next_line.c get_next_line_utils.c 
+	get_next_line.c get_next_line_utils.c ft_strcat.c ft_strncat.c
 SRCSB = ft_lstnew_bonus.c ft_lstadd_front_bonus.c ft_lstsize_bonus.c ft_lstlast_bonus.c \
 	ft_lstadd_back_bonus.c ft_lstdelone_bonus.c ft_lstclear_bonus.c ft_lstiter_bonus.c ft_lstmap_bonus.c \
 	get_next_line_bonus.c get_next_line_utils_bonus.c
@@ -24,7 +24,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	ar $(ARFLAGS) $@ $?
 bonus: $(OBJS_B) $(NAME)
-	ar ${ARFLAGS} ${NAME} ${OBJS_B}  
+	ar ${ARFLAGS} ${NAME} ${OBJS_B}
 #here we remove the object files (.o) that were created
 clean:
 	rm -rf ${OBJS} ${OBJS_B}
