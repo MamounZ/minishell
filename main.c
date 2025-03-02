@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/01 22:04:21 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/02 15:23:22 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,10 @@ int main(int argc, char **argv, char **envp)
 		if (*input)
 			add_history(input);
 		copy_env(envp, ms);
-		expanded_input = expand_variables(input, ms->envp_cpy, 1);
-		cmd_args = ft_split(expanded_input, ' '); // Tokenize expanded input
+		expanded_input = expand_variables(argv, input, ms->envp_cpy, 1);
+		cmd_args = ft_split(expanded_input, ' '); // Here you should replaice this line with your Tokenizer so the builtin commands could be executede.
 
-		// Execute built-in command if it matches
+		// Execute builtin command if it matches
 		if (cmd_args[0])
 			execute_builtin(cmd_args, ms);
 

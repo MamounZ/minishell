@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 22:05:32 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/01 22:30:54 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/01 23:41:50 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,33 +15,34 @@
 void ft_echo(char **args)
 {
 	int i = 1;
-	int newline = 1; // Default: print newline
+	int newline = 1;
 
 	// Check for -n flag
-	if (args[i] && strcmp(args[i], "-n") == 0)
+	while (args[i] && args[i][0] == '-' && args[i][1] == 'n')
 	{
-		newline = 0;
+		int j = 1;
+		while (args[i][j] == 'n') // Ensure all characters after '-' are 'n'
+			j++;
+		if (args[i][j] != '\0') // If there's a non-'n' character, stop checking
+			break;
+		newline = 0; // Valid -n flag detected
 		i++;
 	}
-
-	// Print remaining arguments with spacing
 	while (args[i])
 	{
 		ft_printf("%s", args[i]);
 		if (args[i + 1])
-			printf(" ");
+			ft_printf(" ");
 		i++;
 	}
-
-	// Print newline if -n was not used
 	if (newline)
-		printf("\n");
+		ft_printf("\n");
 }
 
 void execute_builtin(char **args, t_ms *ms)
 {
 	(void)ms;
-	if (strcmp(args[0], "echo") == 0)
+	if (ft_strcmp(args[0], "echo") == 0)
 		ft_echo(args);
 	// else if (strcmp(args[0], "cd") == 0)
 	// 	ft_cd(args, ms);
@@ -56,5 +57,5 @@ void execute_builtin(char **args, t_ms *ms)
 	// else if (strcmp(args[0], "exit") == 0)
 	// 	ft_exit(args, ms);
 	else
-		printf("%s: command not found\n", args[0]);
+		ft_printf("%s: command not found\n", args[0]);
 }

@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/01 22:06:14 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/02 15:23:12 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ typedef struct s_ms
 }		t_ms;
 
 void copy_env(char **envp, t_ms *ms);
-char *expand_variables(char *input, char **envp, int last_exit_status);
+char *expand_variables(char **argv, char *input, char **envp, int last_exit_status);
 void execute_builtin(char **args, t_ms *ms);
 
 #endif

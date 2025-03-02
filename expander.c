@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/01 21:23:51 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/02 23:08:36 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ char	*get_env_value(char *var, char **envp)
 	return (ft_strdup(""));
 }
 
-char	*expand_variables(char *input, char **envp, int last_exit_status)
+char	*expand_variables(char **argv, char *input, char **envp, int last_exit_status)
 {
 	int i;
 	int j;
@@ -55,30 +55,39 @@ char	*expand_variables(char *input, char **envp, int last_exit_status)
 	{
 		if (input[i] == '\'' && !in_double_quotes)
 		{
-			in_single_quotes = !in_single_quotes; // Toggle single-quote mode
+			in_single_quotes = !in_single_quotes;
 			ft_strncat(expanded, &input[i], 1);
 			i++;
 			continue;
 		}
 		else if (input[i] == '\"' && !in_single_quotes)
 		{
-			in_double_quotes = !in_double_quotes; // Toggle double-quote mode
+			in_double_quotes = !in_double_quotes;
 			ft_strncat(expanded, &input[i], 1);
 			i++;
 			continue;
 		}
-
 		if (input[i] == '$' && input[i + 1] && !in_single_quotes) // Expand only outside single quotes
 		{
 			i++;
-			if (input[i] == '?')
+			if (input[i] == '0')
+			{
+				ft_strcat(expanded, argv[0]);
+				i++;
+			}
+			else if (input[i] >= '1' && input[i] <= '9')
+			{
+				ft_strcat(expanded, "");
+				i++;
+			}
+			else if (input[i] == '?')
 			{
 				exit_status = ft_itoa(last_exit_status);
 				ft_strcat(expanded, exit_status);
 				free(exit_status);
 				i++;
 			}
-			else
+			else if (is_valid_var_char(input[i]))
 			{
 				j = 0;
 				while (is_valid_var_char(input[i]))
@@ -88,6 +97,25 @@ char	*expand_variables(char *input, char **envp, int last_exit_status)
 				if (value)
 					ft_strcat(expanded, value);
 				free(value);
+			}
+			else
+			{
+				// If "$" is alone in quotes, preserve it (echo "$")
+				if (in_double_quotes && (input[i] == '\'' || input[i] == '\"'))
+				{
+					ft_strncat(expanded, "$", 1);
+					continue;
+				}
+				// If $ is followed by a quote, do NOT print it
+				if (input[i] == '\'' || input[i] == '\"')
+					continue;
+				// Otherwise, keep $
+				ft_strncat(expanded, "$", 1);
+				if (input[i]) // Add next character if not at end
+				{
+					ft_strncat(expanded, &input[i], 1);
+					i++;
+				}
 			}
 		}
 		else
