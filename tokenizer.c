@@ -61,7 +61,7 @@ t_token *tokenize(char *input)
         }
         else
         {
-            while (*input && !ft_isspace(*input) && !is_operator(input) && !is_quote(*input))
+            while (*input && !ft_isspace(*input) && !is_operator(input))
                 input++;
             type = WORD;
         }
