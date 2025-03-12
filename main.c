@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/02 15:23:22 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/08 14:22:04 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,24 +24,24 @@ int main(int argc, char **argv, char **envp)
 	ms = malloc(sizeof(t_ms));
 	if (!ms)
 		return (0);
+	ms->envp_cpy = NULL;
+	copy_env(envp, ms);
 	while (1)
 	{
 		input = readline("minishell> ");
-		if (!input)
+		if (!input || ft_strcmp(input, "exit") == 0)
 		{
 			printf("exit\n");
 			break;
 		}
 		if (*input)
 			add_history(input);
-		copy_env(envp, ms);
-		expanded_input = expand_variables(argv, input, ms->envp_cpy, 1);
+		expanded_input = expand_variables(argv, input, ms, 1);
 		cmd_args = ft_split(expanded_input, ' '); // Here you should replaice this line with your Tokenizer so the builtin commands could be executede.
 
 		// Execute builtin command if it matches
 		if (cmd_args[0])
 			execute_builtin(cmd_args, ms);
-
 		free(input);
 		free(expanded_input);
 	}

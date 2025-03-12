@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/02 23:08:36 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/05 21:42:14 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,23 +19,40 @@ int	is_valid_var_char(char c)
 	return (0);
 }
 
-char	*get_env_value(char *var, char **envp)
-{
-	int	i;
-	int	len;
+// char	*get_env_value(char *var, t_ms *ms)
+// {
+// 	int	i;
+// 	int	len;
 
-	i = 0;
+// 	i = 0;
+// 	len = ft_strlen(var);
+// 	while (ms->envp_cpy[i])
+// 	{
+// 		if (ft_strncmp(ms->envp_cpy[i], var, len) == 0 && ms->envp_cpy[i][len] == '=')
+// 			return (ft_strdup(ms->envp_cpy[i] + len + 1));
+// 		i++;
+// 	}
+// 	return (ft_strdup(""));
+// }
+char *ft_getenv(char *var, t_ms *ms)
+{
+	int i;
+	int len;
+
+	if (!var || !ms || !ms->envp_cpy)
+		return (NULL);
 	len = ft_strlen(var);
-	while (envp[i])
+	i = 0;
+	while (ms->envp_cpy[i])
 	{
-		if (ft_strncmp(envp[i], var, len) == 0 && envp[i][len] == '=')
-			return (ft_strdup(envp[i] + len + 1));
+		if (ft_strncmp(ms->envp_cpy[i], var, len) == 0 && ms->envp_cpy[i][len] == '=')
+			return (ms->envp_cpy[i] + len + 1);
 		i++;
 	}
-	return (ft_strdup(""));
+	return (NULL);
 }
-
-char	*expand_variables(char **argv, char *input, char **envp, int last_exit_status)
+// handle echo "\$USER"
+char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
 {
 	int i;
 	int j;
@@ -93,7 +110,7 @@ char	*expand_variables(char **argv, char *input, char **envp, int last_exit_stat
 				while (is_valid_var_char(input[i]))
 					var_name[j++] = input[i++];
 				var_name[j] = '\0';
-				value = get_env_value(var_name, envp);
+				value = ft_getenv(var_name, ms);
 				if (value)
 					ft_strcat(expanded, value);
 				free(value);
