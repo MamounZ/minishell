@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/08 14:22:04 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/12 15:30:17 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ int main(int argc, char **argv, char **envp)
 		return (0);
 	ms->envp_cpy = NULL;
 	copy_env(envp, ms);
+	setup_signals();
 	while (1)
 	{
 		input = readline("minishell> ");

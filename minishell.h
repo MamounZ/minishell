@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/05 22:51:15 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/12 15:30:39 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "libft/includes/libft.h"
@@ -39,4 +40,5 @@ char *ft_getenv(char *var, t_ms *ms);
 void add_to_env(char *arg, t_ms *ms);
 void ft_cd(char **args, t_ms *ms);
 char **realloc_env(char **envp, char *new_var);
+void setup_signals(void);
 #endif
