@@ -15,6 +15,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "libft/includes/libft.h"
@@ -51,6 +52,7 @@ char *ft_getenv(char *var, t_ms *ms);
 void add_to_env(char *arg, t_ms *ms);
 void ft_cd(char **args, t_ms *ms);
 char **realloc_env(char **envp, char *new_var);
+void setup_signals(void);
 t_token *tokenize(char *input);
 void print_tokens(t_token *tokens);
 t_token *new_token(char *value, t_token_type type);

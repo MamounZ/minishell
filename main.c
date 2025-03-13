@@ -26,6 +26,7 @@ int main(int argc, char **argv, char **envp)
 		return (0);
 	ms->envp_cpy = NULL;
 	copy_env(envp, ms);
+	setup_signals();
 	while (1)
 	{
 		input = readline("minishell> ");
