@@ -4,11 +4,7 @@ LIBFT_PATH = ./libft
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
 NAME = minishell
-<<<<<<< HEAD
-SRCS = main.c envp_copy.c expander.c builtin_cmd.c export.c unset.c pwd.c cd.c #error_exit.c
-=======
-SRCS = main.c envp_copy.c expander.c builtin_cmd.c tokenizer.c tokenizer_utiltes.c #error_exit.c
->>>>>>> Yaman_work
+SRCS = main.c envp_copy.c expander.c builtin_cmd.c tokenizer.c tokenizer_utiltes.c export.c unset.c pwd.c cd.c#error_exit.c
 
 OBJS = $(SRCS:.c=.o)
 
