@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/12 15:30:39 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/13 22:16:34 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,21 @@
 #include "libft/includes/get_next_line.h"
 #include "libft/includes/ft_printf.h"
 
+typedef enum e_token_type {
+    WORD, PIPE, REDIR_IN, REDIR_OUT, HEREDOC, APPEND
+} t_token_type;
+
+typedef struct s_token {
+    char *value;
+    t_token_type type;
+    struct s_token *next;
+} t_token;
+
+
 typedef struct s_ms
 {
 	char	**envp_cpy;
+	t_token *tokens;
 }		t_ms;
 
 void copy_env(char **envp, t_ms *ms);
@@ -41,4 +53,10 @@ void add_to_env(char *arg, t_ms *ms);
 void ft_cd(char **args, t_ms *ms);
 char **realloc_env(char **envp, char *new_var);
 void setup_signals(void);
+t_token *tokenize(char *input);
+void print_tokens(t_token *tokens);
+t_token *new_token(char *value, t_token_type type);
+void add_token(t_token **tokens, t_token *new_token);
+void free_tokens(t_token *tokens);
+
 #endif
