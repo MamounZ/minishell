@@ -61,8 +61,19 @@ t_token *tokenize(char *input)
         }
         else
         {
-            while (*input && !ft_isspace(*input) && !is_operator(input))
+            while (*input && !is_operator(input) && !ft_isspace(*input))
+            {
+                if (is_quote(*input))
+                {
+                    quote_char = *input++;
+                    while (*input && *input != quote_char)
+                        input++;
+                    if (*input == quote_char)
+                        input++;
+                    continue;
+                }
                 input++;
+            }
             type = WORD;
         }
         add_token(&tokens, new_token(ft_substr(token, 0, input - token), type));
