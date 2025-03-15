@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/05 21:42:14 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/15 20:35:12 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
 				value = ft_getenv(var_name, ms);
 				if (value)
 					ft_strcat(expanded, value);
-				free(value);
+				//free(value);
 			}
 			else
 			{
