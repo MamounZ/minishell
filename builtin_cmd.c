@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 22:05:32 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/06 21:33:30 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/16 22:51:36 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,9 +49,22 @@ void ft_env(t_ms *ms)
 	}
 }
 
+int is_builtin(char *cmd)
+{
+	if (!cmd)
+		return 0;
+	if (!ft_strcmp(cmd, "echo") || !ft_strcmp(cmd, "cd") ||
+		!ft_strcmp(cmd, "pwd") || !ft_strcmp(cmd, "export") ||
+		!ft_strcmp(cmd, "unset") || !ft_strcmp(cmd, "env") ||
+		!ft_strcmp(cmd, "exit"))
+		return 1;
+	return 0;
+}
+
 void execute_builtin(char **args, t_ms *ms)
 {
-	(void)ms;
+	if (!args || !args[0])
+		return ;
 	if (ft_strcmp(args[0], "echo") == 0)
 		ft_echo(args);
 	else if (ft_strcmp(args[0], "cd") == 0)
@@ -64,6 +77,6 @@ void execute_builtin(char **args, t_ms *ms)
 		ft_unset(args, ms);
 	else if (ft_strcmp(args[0], "env") == 0)
 		ft_env(ms);
-	else
-		ft_printf("%s: command not found\n", args[0]);
+	// else if (ft_strcmp(args[0], "exit") == 0)
+	// 	ft_exit(args, ms);
 }

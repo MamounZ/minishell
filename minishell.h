@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/13 22:16:34 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/16 22:35:42 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct s_ms
 void copy_env(char **envp, t_ms *ms);
 char *expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status);
 void execute_builtin(char **args, t_ms *ms);
+int is_builtin(char *cmd);
 int	is_valid_var_char(char c);
 void ft_export(char **args, t_ms *ms);
 void ft_env(t_ms *ms);
