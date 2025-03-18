@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/16 22:35:42 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/18 16:17:50 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,5 +59,5 @@ void print_tokens(t_token *tokens);
 t_token *new_token(char *value, t_token_type type);
 void add_token(t_token **tokens, t_token *new_token);
 void free_tokens(t_token *tokens);
-
+int check_token(t_ms *ms);
 #endif

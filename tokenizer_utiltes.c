@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 11:46:47 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/03/05 12:02:50 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/18 18:04:47 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,4 +51,30 @@ void free_tokens(t_token *tokens)
         free(tmp->value);
         free(tmp);
     }
+}
+
+int check_token(t_ms *ms)
+{
+    t_token *tmp;
+    t_token *tmp2;
+
+    tmp = ms->tokens;
+    while (tmp)
+    {
+        tmp2 = tmp->next;
+        if (tmp->type == PIPE && (!tmp2 || tmp2->type == PIPE || tmp == ms->tokens))
+        {
+            ft_printf("minishell: syntax error near unexpected token `|'\n");
+            return (1);
+        }
+        // if (tmp2)
+        // printf("tmp->type: %d\n", tmp2->type != WORD);
+        else if ((tmp->type != WORD) && (!tmp2 || tmp2->type != WORD))
+        {
+            ft_printf("minishell: syntax error near unexpected token `newline'\n");
+            return (1);
+        }
+        tmp = tmp->next;
+    }
+    return (0);
 }
