@@ -6,12 +6,39 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/18 15:51:15 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/20 11:48:03 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+
+// checj any quotes in the input
+int check_quotes(char *input)
+{
+	int num = 0;
+	while (*input)
+	{
+		if (*input == '"' || *input == '\'')
+		{
+			int quote = *input;
+			num++;
+			input++;
+			while (*input && *input != quote)
+				input++;
+			if (*input == quote)
+				num++;
+		}
+		if (*input)
+			input++;
+	}
+	if (num % 2)
+	{
+		ft_printf("minishell: syntax error: unexpected end of file\n");
+		return (1);
+	}
+	return (0);
+}
 // Convert token list into an array of arguments
 char **tokens_to_args(t_token *tokens)
 {
@@ -74,12 +101,17 @@ int main(int argc, char **argv, char **envp)
 		}
 		if (*input)
 			add_history(input);
+		if (check_quotes(input))
+		{
+			free(input);
+			continue;
+		}
 		copy_env(envp, ms);
 		expanded_input = expand_variables(argv, input, ms, 1);
-		ft_printf("%s\n", expanded_input);
+		// ft_printf("%s\n", expanded_input);
 		ms->tokens = tokenize(expanded_input);
 		check_token(ms);
-		print_tokens(ms->tokens);
+		// print_tokens(ms->tokens);
 		cmd_args = tokens_to_args(ms->tokens);
 		// Execute builtin command if it matches
 		if (cmd_args && cmd_args[0] && is_builtin(cmd_args[0]))

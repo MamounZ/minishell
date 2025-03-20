@@ -6,13 +6,14 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/03/18 21:26:46 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/20 11:30:18 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void execute_command(t_ms *ms, char *command) {
+void execute_command(t_ms *ms, char *command)
+{
     
 }
 
