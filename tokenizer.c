@@ -27,6 +27,7 @@ t_token_type get_token_type(char *value)
     return WORD;
 }
 
+
 // Tokenize the input string
 t_token *tokenize(char *input)
 {
@@ -50,17 +51,17 @@ t_token *tokenize(char *input)
             input += operator_len;
             type = get_token_type(ft_substr(token, 0, operator_len));
         }
-        else if (is_quote(*input))
-        {
-            quote_char = *input++;
-            while (*input && *input != quote_char)
-                input++;
-            if (*input == quote_char)
-                input++;
-            type = WORD;
-        }
         else
         {
+            if (is_quote(*input))
+            {
+                quote_char = *input++;
+                while (*input && *input != quote_char)
+                    input++;
+                if (*input == quote_char)
+                    input++;
+                type = WORD;
+            }
             while (*input && !is_operator(input) && !ft_isspace(*input))
             {
                 if (is_quote(*input))
@@ -88,3 +89,18 @@ void print_tokens(t_token *tokens) {
         tmp = tmp->next;
     }
 }
+
+// void fix_tokens(t_token **tokens)
+// {
+//     t_token *tmp = *tokens;
+//     t_token *tmp2;
+//     while (tmp)
+//     {
+//         if (tmp->type == HEREDOC || tmp->type == APPEND || tmp->type == REDIR_IN || tmp->type == REDIR_OUT)
+//         {
+//             free(tmp->value);
+//             tmp->next->type = tmp->type;
+//         }
+//         tmp = tmp->next;
+//     }
+// }

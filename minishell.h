@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/18 16:17:50 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/26 07:14:15 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include "libft/includes/libft.h"
 #include "libft/includes/get_next_line.h"
 #include "libft/includes/ft_printf.h"
+#include <sys/wait.h>
+
 
 typedef enum e_token_type {
     WORD, PIPE, REDIR_IN, REDIR_OUT, HEREDOC, APPEND
@@ -60,4 +62,6 @@ t_token *new_token(char *value, t_token_type type);
 void add_token(t_token **tokens, t_token *new_token);
 void free_tokens(t_token *tokens);
 int check_token(t_ms *ms);
+void execute_command(t_ms *ms);
+void free_args(char **args);
 #endif
