@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/26 07:14:15 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/27 11:08:12 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "libft/includes/libft.h"

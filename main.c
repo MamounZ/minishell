@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/26 07:11:26 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/27 11:38:54 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,11 +106,11 @@ int main(int argc, char **argv, char **envp)
 			continue;
 		}
 		expanded_input = expand_variables(argv, input, ms, 1);
-		ft_printf("%s\n", expanded_input);
+		// ft_printf("%s\n", expanded_input);
 		ms->tokens = tokenize(expanded_input);
 		check_token(ms);
 		// fix_tokens(&ms->tokens);
-		print_tokens(ms->tokens);
+		// print_tokens(ms->tokens);
 		// cmd_args = tokens_to_args(ms->tokens);
 		// if (is_builtin(cmd_args[0]))
 		// 	execute_builtin(cmd_args, ms);
