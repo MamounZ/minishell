@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/03/27 11:34:28 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/28 12:24:43 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ void execute_command(t_ms *ms)
 
     while (tmp)
     {
+        // printf("tmp->value: %s\n", tmp->value);
         if (tmp->type == PIPE || !tmp->next)
         {
             if (tmp->type != PIPE)
@@ -64,8 +65,6 @@ void execute_command(t_ms *ms)
                 free_args(args);
                 free(cmd);
                 cmd = ft_strdup("");
-                tmp = tmp->next;
-                continue;
             }
             else
             {
@@ -89,6 +88,7 @@ void execute_command(t_ms *ms)
                         close(fd[1]);
                     }
                     cmd = get_cmd_path(args[0], ms);
+                    // ft_printf("cmd: %s\n", cmd);
                     execve(cmd, args, ms->envp_cpy);
                     perror("execve");
                     free_args(args);
@@ -116,11 +116,9 @@ void execute_command(t_ms *ms)
             free(cmd);
             cmd = path;
         }
+        
         tmp = tmp->next;
     }
     if (prev_fd != -1)
         close(prev_fd);
 }
-
-
-
