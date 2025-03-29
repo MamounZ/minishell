@@ -1,8 +1,1 @@
-tmp->value: >
-tmp->value: o
-cmd: (null)
-minishell> 0797371108
-Token: 0797371108 Type: 0
-tmp->value: 0797371108
-cmd: (null)
-minishell> exit
+1
