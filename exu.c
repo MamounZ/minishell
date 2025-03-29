@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/03/29 17:13:22 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/29 17:18:38 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,6 +196,60 @@ void execute_command(t_ms *ms)
             dup2(fd_out, STDOUT_FILENO);
             close(fd_out);
             tmp = tmp->next;
+            if (!tmp->next)
+            {
+                char **args = ft_split(cmd, ' ');
+                if (is_builtin(args[0]))
+                {
+                    // printf("builtin: %s\n", args[0]);
+                    execute_builtin(args, ms);
+                    free_args(args);
+                    free(cmd);
+                    cmd = ft_strdup("");
+                }
+                else
+                {
+                    if (tmp->type == PIPE && pipe(fd) == -1)
+                    {
+                        perror("pipe");
+                        exit(1);
+                    }
+                    pid = fork();
+                    if (pid == 0)
+                    {
+                        if (prev_fd != -1)
+                        {
+                            dup2(prev_fd, STDIN_FILENO);
+                            close(prev_fd);
+                        }
+                        if (tmp->type == PIPE)
+                        {
+                            close(fd[0]);
+                            dup2(fd[1], STDOUT_FILENO);
+                            close(fd[1]);
+                        }
+                        cmd = get_cmd_path(args[0], ms);
+                        // ft_printf("cmd: %s\n", cmd);
+                        execve(cmd, args, ms->envp_cpy);
+                        perror("execve");
+                        free_args(args);
+                        exit(1);
+                    }
+                    else
+                    {
+                        if (prev_fd != -1)
+                            close(prev_fd);
+                        if (tmp->type == PIPE)
+                        {
+                            close(fd[1]);
+                            prev_fd = fd[0];
+                        }
+                        wait(NULL);
+                        free(cmd);
+                        cmd = ft_strdup("");
+                    }
+                }
+            }
         }
         else if (tmp->type == REDIR_IN)
         {
