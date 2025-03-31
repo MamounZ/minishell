@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/03/31 06:23:23 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/31 13:25:44 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,18 @@ char *get_cmd_path(char *cmd, t_ms *ms)
     return (NULL);
 }
 
+void print_args(char **args)
+{
+    printf("---------\n");
+    int i = 0;
+    while (args[i])
+    {
+        printf("%s\n", args[i]);
+        i++;
+    }
+    printf("---------\n");
+}
+
 void execute_command(t_ms *ms)
 {
     char *cmd = ft_strdup("");
@@ -49,98 +61,8 @@ void execute_command(t_ms *ms)
 
     while (tmp)
     {
-            if (!tmp->next || tmp->type == PIPE)
-            {
-                if (tmp->type != PIPE)
-            {
-                cmd = ft_strjoin(cmd, " ");
-                path = ft_strjoin(cmd, tmp->value);
-                free(cmd);
-                cmd = path;
-            }
-                char **args = ft_split(cmd, ' ');
-                if (is_builtin(args[0]))
-                {
-                    execute_builtin(args, ms);
-                    free_args(args);
-                    free(cmd);
-                    cmd = ft_strdup("");
-                }
-                else
-                {
-                    if (tmp->type == PIPE && pipe(fd) == -1)
-                    {
-                        perror("pipe");
-                        exit(1);
-                    }
-                    pid = fork();
-                    if (pid == 0)
-                    {
-                        if (fd_in != -1)
-                        {
-                            dup2(fd_in, STDIN_FILENO);
-                            close(fd_in);
-                        }
-                        else if (prev_fd != -1)
-                        {
-                            dup2(prev_fd, STDIN_FILENO);
-                            close(prev_fd);
-                        }
-                        else
-                        {
-                            dup2(stdin_copy, STDIN_FILENO);
-                        }
-                        if (tmp->type == PIPE)
-                        {
-                            if (fd_out != -1)
-                            {
-                                dup2(fd_out, STDOUT_FILENO);
-                                close(fd_out);
-                            }
-                            else if (prev_fd != -1)
-                            {
-                                dup2(prev_fd, STDOUT_FILENO);
-                                close(prev_fd);
-                            }
-                            else
-                            {
-                                dup2(stdout_copy, STDOUT_FILENO);
-                            }
-                        }
-                        cmd = get_cmd_path(args[0], ms);
-                        execve(cmd, args, ms->envp_cpy);
-                        perror("execve");
-                        free_args(args);
-                        exit(1);
-                    }
-                    else
-                    {
-                        if (prev_fd != -1)
-                            close(prev_fd);
-                        if (tmp->type == PIPE)
-                        {
-                            close(fd[1]);
-                            prev_fd = fd[0];
-                        }
-                        wait(NULL);
-                        free(cmd);
-                        if (fd_out != -1)
-                        {
-                            close(fd_out);
-                            fd_out = -1;
-                        }
-                        if (fd_in != -1)
-                        {
-                            close(fd_in);
-                            fd_in = -1;
-                        }
-                        dup2(stdout_copy, STDOUT_FILENO);
-                        dup2(stdin_copy, STDIN_FILENO);
-                        cmd = ft_strdup("");
-                    }
-                }
-            }
-        else if (tmp->type == WORD)
+        // printf("tmp->type: %s\n", tmp->value);
+        if (tmp->type == WORD)
         {
             cmd = ft_strjoin(cmd, " ");
             path = ft_strjoin(cmd, tmp->value);
@@ -155,93 +77,7 @@ void execute_command(t_ms *ms)
                 perror("open");
                 exit(1);
             }
-            dup2(fd_out, STDOUT_FILENO);
-            close(fd_out);
             tmp = tmp->next;
-            if (!tmp->next || tmp->next->type == PIPE)
-            {
-                char **args = ft_split(cmd, ' ');
-                if (is_builtin(args[0]))
-                {
-                    execute_builtin(args, ms);
-                    free_args(args);
-                    free(cmd);
-                    cmd = ft_strdup("");
-                }
-                else
-                {
-                    if (tmp->type == PIPE && pipe(fd) == -1)
-                    {
-                        perror("pipe");
-                        exit(1);
-                    }
-                    pid = fork();
-                    if (pid == 0)
-                    {
-                        if (fd_in != -1)
-                        {
-                            dup2(fd_in, STDIN_FILENO);
-                            close(fd_in);
-                        }
-                        else if (prev_fd != -1)
-                        {
-                            dup2(prev_fd, STDIN_FILENO);
-                            close(prev_fd);
-                        }
-                        else
-                        {
-                            dup2(stdin_copy, STDIN_FILENO);
-                        }
-                        if (tmp->type == PIPE)
-                        {
-                            if (fd_out != -1)
-                            {
-                                dup2(fd_out, STDOUT_FILENO);
-                                close(fd_out);
-                            }
-                            else if (prev_fd != -1)
-                            {
-                                dup2(prev_fd, STDOUT_FILENO);
-                                close(prev_fd);
-                            }
-                            else
-                            {
-                                dup2(stdout_copy, STDOUT_FILENO);
-                            }
-                        }
-                        cmd = get_cmd_path(args[0], ms);
-                        execve(cmd, args, ms->envp_cpy);
-                        perror("execve");
-                        free_args(args);
-                        exit(1);
-                    }
-                    else
-                    {
-                        if (prev_fd != -1)
-                            close(prev_fd);
-                        if (tmp->type == PIPE)
-                        {
-                            close(fd[1]);
-                            prev_fd = fd[0];
-                        }
-                        wait(NULL);
-                        free(cmd);
-                        if (fd_out != -1)
-                        {
-                            close(fd_out);
-                            fd_out = -1;
-                        }
-                        if (fd_in != -1)
-                        {
-                            close(fd_in);
-                            fd_in = -1;
-                        }
-                        dup2(stdout_copy, STDOUT_FILENO);
-                        dup2(stdin_copy, STDIN_FILENO);
-                        cmd = ft_strdup("");
-                    }
-                }
-            }
         }
         else if (tmp->type == REDIR_IN)
         {
@@ -251,91 +87,102 @@ void execute_command(t_ms *ms)
                 perror("open");
                 exit(1);
             }
-            dup2(fd_in, STDIN_FILENO);
-            close(fd_in);
             tmp = tmp->next;
-            if (!tmp->next || tmp->next->type == PIPE)
+        }
+        if (!tmp->next || tmp->type == PIPE)
+        {
+            char **args = ft_split(cmd, ' ');
+            if (is_builtin(args[0]))
             {
-                char **args = ft_split(cmd, ' ');
-                if (is_builtin(args[0]))
+                execute_builtin(args, ms);
+                free_args(args);
+                free(cmd);
+                cmd = ft_strdup("");
+            }
+            else
+            {
+                if (tmp->type == PIPE && pipe(fd) == -1)
                 {
-                    execute_builtin(args, ms);
-                    free_args(args);
-                    free(cmd);
-                    cmd = ft_strdup("");
+                    perror("pipe");
+                    exit(1);
                 }
-                else
+                pid = fork();
+                if (pid == 0)
                 {
-                    if (tmp->type == PIPE && pipe(fd) == -1)
+                    if (fd_in != -1)
                     {
-                        perror("pipe");
-                        exit(1);
-                    }
-                    pid = fork();
-                    if (pid == 0)
-                    {
-                        if (fd_in != -1)
-                        {
-                            dup2(fd_in, STDIN_FILENO);
-                            close(fd_in);
-                        }
-                        else if (prev_fd != -1)
-                        {
-                            dup2(prev_fd, STDIN_FILENO);
-                            close(prev_fd);
-                        }
-                        else
-                        {
-                            dup2(stdin_copy, STDIN_FILENO);
-                        }
+                        dup2(fd_in, STDIN_FILENO);
+                        close(fd_in);
                         if (tmp->type == PIPE)
-                        {
-                            if (fd_out != -1)
-                            {
-                                dup2(fd_out, STDOUT_FILENO);
-                                close(fd_out);
-                            }
-                            else if (prev_fd != -1)
-                            {
-                                dup2(prev_fd, STDOUT_FILENO);
-                                close(prev_fd);
-                            }
-                            else
-                            {
-                                dup2(stdout_copy, STDOUT_FILENO);
-                            }
-                        }
-                        cmd = get_cmd_path(args[0], ms);
-                        execve(cmd, args, ms->envp_cpy);
-                        perror("execve");
-                        free_args(args);
-                        exit(1);
+                            close(fd[0]);
+                    }
+                    else if (prev_fd != -1)
+                    {
+                        dup2(prev_fd, STDIN_FILENO);
+                        close(fd[0]);
+                        close(prev_fd);
                     }
                     else
                     {
-                        if (prev_fd != -1)
-                            close(prev_fd);
-                        if (tmp->type == PIPE)
-                        {
-                            close(fd[1]);
-                            prev_fd = fd[0];
-                        }
-                        wait(NULL);
-                        free(cmd);
-                        if (fd_out != -1)
-                        {
-                            close(fd_out);
-                            fd_out = -1;
-                        }
-                        if (fd_in != -1)
-                        {
-                            close(fd_in);
-                            fd_in = -1;
-                        }
-                        dup2(stdout_copy, STDOUT_FILENO);
                         dup2(stdin_copy, STDIN_FILENO);
-                        cmd = ft_strdup("");
                     }
+                    if (fd_out != -1)
+                    {
+                        // printf("fd_out: %d\n", fd_out);
+                        dup2(fd_out, STDOUT_FILENO);
+                        if (tmp->type == PIPE)
+                            close(fd[1]);
+                        // close(fd[1]);
+                        close(fd_out);
+                    }
+                    else if (tmp->type == PIPE)
+                    {
+                        close(fd[0]);
+                        dup2(fd[1], STDOUT_FILENO);
+                        close(fd[1]);
+                    }
+                    else
+                    {
+                        dup2(stdout_copy ,STDOUT_FILENO);
+                    }
+                    // fprintf(stderr,"cmd: %s\n", cmd);
+                    cmd = get_cmd_path(args[0], ms);
+                    // print_args(args);
+                    execve(cmd, args, ms->envp_cpy);
+                    perror("execve");
+                    free_args(args);
+                    exit(1);
+                }
+                else
+                {
+                    if (prev_fd != -1)
+                        close(prev_fd);
+                    if (tmp->type == PIPE && fd_out == -1)
+                    {
+                        close(fd[1]);
+                        prev_fd = fd[0];
+                    }
+                    else
+                    {
+                        prev_fd = -1;
+                    }
+                    wait(NULL);
+                    free(cmd);
+                    free_args(args);
+                    if (fd_out != -1)
+                    {
+                        close(fd_out);
+                        fd_out = -1;
+                    }
+                    if (fd_in != -1)
+                    {
+                        close(fd_in);
+                        fd_in = -1;
+                    }
+                    // dup2(stdout_copy, STDOUT_FILENO);
+                    // dup2(stdin_copy, STDIN_FILENO);
+                    // dup2(stdin_copy, STDIN_FILENO);
+                    cmd = ft_strdup("");
                 }
             }
         }
@@ -345,4 +192,10 @@ void execute_command(t_ms *ms)
     dup2(stdout_copy, STDOUT_FILENO);
     if (prev_fd != -1)
         close(prev_fd);
+    if (fd_in != -1)
+        close(fd_in);
+    if (fd_out != -1)
+        close(fd_out);
+    free(cmd);
+    ms->tokens = NULL;
 }

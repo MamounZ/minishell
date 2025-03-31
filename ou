@@ -1,40 +1,4 @@
-total 304
-drwxrwxr-x  5 yaman-alrifai yaman-alrifai  4096 Mar 31 06:23 .
-drwxr-x--- 35 yaman-alrifai yaman-alrifai  4096 Mar 31 06:23 ..
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  2320 Mar 31 01:07 builtin_cmd.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  8568 Mar 31 01:20 builtin_cmd.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  2679 Mar 31 01:07 cd.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  8832 Mar 31 01:20 cd.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  1310 Mar 31 01:07 envp_copy.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  5696 Mar 31 01:20 envp_copy.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  1079 Mar 31 01:07 error_exit.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  3613 Mar 31 01:07 expander.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  9336 Mar 31 01:20 expander.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  4451 Mar 31 01:07 export.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai 11344 Mar 31 01:20 export.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai 12201 Mar 31 06:23 exu.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai 15264 Mar 31 06:23 exu.o
-drwxrwxr-x  8 yaman-alrifai yaman-alrifai  4096 Mar 31 01:09 .git
--rw-rw-r--  1 yaman-alrifai yaman-alrifai    22 Mar 31 01:09 i
--rw-rw-r--  1 yaman-alrifai yaman-alrifai     2 Mar 31 01:09 I
-drwxrwxr-x  3 yaman-alrifai yaman-alrifai  4096 Mar 31 01:20 libft
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  2752 Mar 31 01:09 main.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  9216 Mar 31 01:20 main.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai   575 Mar 31 01:09 Makefile
--rwxrwxr-x  1 yaman-alrifai yaman-alrifai 62784 Mar 31 06:23 minishell
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  2350 Mar 31 01:09 minishell.h
--rw-rw-r--  1 yaman-alrifai yaman-alrifai     3 Mar 31 06:24 o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai     0 Mar 31 06:25 ou
--rw-rw-r--  1 yaman-alrifai yaman-alrifai    38 Mar 31 01:09 out
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  1063 Mar 31 01:07 pwd.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  4608 Mar 31 01:20 pwd.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai    43 Mar 31 01:07 README.md
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  1243 Mar 31 01:07 signals.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  4800 Mar 31 01:20 signals.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  2654 Mar 31 01:09 tokenizer.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  9120 Mar 31 01:20 tokenizer.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  2266 Mar 31 01:09 tokenizer_utiltes.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  7008 Mar 31 01:20 tokenizer_utiltes.o
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  1810 Mar 31 01:07 unset.c
--rw-rw-r--  1 yaman-alrifai yaman-alrifai  6352 Mar 31 01:20 unset.o
-drwxrwxr-x  2 yaman-alrifai yaman-alrifai  4096 Mar 31 01:09 .vscode
+tokenizer.c
+tokenizer.o
+tokenizer_utiltes.c
+tokenizer_utiltes.o
