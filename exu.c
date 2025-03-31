@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/03/31 13:25:44 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/03/31 13:35:12 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,6 +124,7 @@ void execute_command(t_ms *ms)
                     }
                     else
                     {
+                        fprintf(stderr, "stdin_copy: %d\n", stdin_copy);
                         dup2(stdin_copy, STDIN_FILENO);
                     }
                     if (fd_out != -1)
