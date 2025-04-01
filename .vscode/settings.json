@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "minishell.h": "c",
-        "ft_printf.h": "c"
-    }
-}

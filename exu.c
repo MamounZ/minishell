@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/03/31 20:41:38 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/01 13:55:34 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,14 +110,17 @@ void execute_command(t_ms *ms)
                 if (pid == 0)
                 {
                     if (fd_in != -1)
-                    {
+                    {   
                         dup2(fd_in, STDIN_FILENO);
                         close(fd_in);
-                        if (tmp->type == PIPE)
-                            close(fd[0]);
                     }
                     else if (prev_fd != -1)
                     {
+                        if (tmp->type == PIPE)
+                        {
+                            dup2(fd[0], STDIN_FILENO);
+                            close(fd[0]);
+                        }
                         dup2(prev_fd, STDIN_FILENO);
                         close(fd[0]);
                         close(prev_fd);
@@ -127,13 +130,16 @@ void execute_command(t_ms *ms)
                         dup2(fd[0], STDIN_FILENO);
                         close(fd[0]);
                     }
+                    
                     if (fd_out != -1)
                     {
-                        // printf("fd_out: %d\n", fd_out);
-                        dup2(fd_out, STDOUT_FILENO);
                         if (tmp->type == PIPE)
-                            close(fd[1]);
-                        // close(fd[1]);
+                    {
+                        close(fd[0]);
+                        dup2(fd[1], STDOUT_FILENO);
+                        close(fd[1]);
+                    }
+                        dup2(fd_out, STDOUT_FILENO);
                         close(fd_out);
                     }
                     else if (tmp->type == PIPE)
@@ -158,14 +164,10 @@ void execute_command(t_ms *ms)
                 {
                     if (prev_fd != -1)
                         close(prev_fd);
-                    if (tmp->type == PIPE && fd_out == -1)
+                    if (tmp->type == PIPE)
                     {
                         close(fd[1]);
                         prev_fd = fd[0];
-                    }
-                    else
-                    {
-                        prev_fd = -1;
                     }
                     wait(NULL);
                     free(cmd);
