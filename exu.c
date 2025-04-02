@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/01 13:55:34 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/02 12:39:54 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,13 +64,18 @@ void execute_command(t_ms *ms)
         // printf("tmp->type: %s\n", tmp->value);
         if (tmp->type == WORD)
         {
-            cmd = ft_strjoin(cmd, " ");
-            path = ft_strjoin(cmd, tmp->value);
+            path = ft_strjoin(cmd, " ");
             free(cmd);
-            cmd = path;
+            cmd = ft_strjoin(path, tmp->value);
+            free(path);
         }
         else if (tmp->type == REDIR_OUT)
         {
+            if (fd_out != -1)
+            {
+                close(fd_out);
+                fd_out = -1;
+            }
             fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
             if (fd_out == -1)
             {
@@ -81,6 +86,11 @@ void execute_command(t_ms *ms)
         }
         else if (tmp->type == REDIR_IN)
         {
+            if (fd_in != -1)
+            {
+                close(fd_in);
+                fd_in = -1;
+            }
             fd_in = open(tmp->next->value, O_RDONLY);
             if (fd_in == -1)
             {
@@ -191,14 +201,18 @@ void execute_command(t_ms *ms)
         }
         tmp = tmp->next;
     }
-    dup2(stdin_copy, STDIN_FILENO);
-    dup2(stdout_copy, STDOUT_FILENO);
+    dup2(STDIN_FILENO, stdin_copy);
+    dup2(STDOUT_FILENO, stdout_copy);
     if (prev_fd != -1)
         close(prev_fd);
     if (fd_in != -1)
         close(fd_in);
     if (fd_out != -1)
         close(fd_out);
+    if (stdin_copy != -1)
+        close(stdin_copy);
+    if (stdout_copy != -1)
+        close(stdout_copy);
     free(cmd);
-    ms->tokens = NULL;
+    free_tokens(ms->tokens);
 }

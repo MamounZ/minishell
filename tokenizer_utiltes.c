@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 11:46:47 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/03/18 18:04:47 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/02 12:41:47 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,10 +62,13 @@ int check_token(t_ms *ms)
     while (tmp)
     {
         tmp2 = tmp->next;
-        if (tmp->type == PIPE && (!tmp2 || tmp2->type == PIPE || tmp == ms->tokens))
+        if (tmp->type == PIPE)
         {
-            ft_printf("minishell: syntax error near unexpected token `|'\n");
-            return (1);
+            if (!tmp2 || tmp2->type == PIPE || tmp == ms->tokens)
+            {
+                ft_printf("minishell: syntax error near unexpected token `|'\n");
+                return (1);
+            }
         }
         // if (tmp2)
         // printf("tmp->type: %d\n", tmp2->type != WORD);

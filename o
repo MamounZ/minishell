@@ -27,6 +27,7 @@ ou
 out
 pwd.c
 pwd.o
+readline_curses.supp
 README.md
 signals.c
 signals.o

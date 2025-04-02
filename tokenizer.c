@@ -24,6 +24,7 @@ t_token_type get_token_type(char *value)
     if (!strcmp(value, ">")) return REDIR_OUT;
     if (!strcmp(value, ">>")) return APPEND;
     if (!strcmp(value, "<<")) return HEREDOC;
+    free(value);
     return WORD;
 }
 
