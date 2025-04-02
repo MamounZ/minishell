@@ -24,7 +24,6 @@ t_token_type get_token_type(char *value)
     if (!strcmp(value, ">")) return REDIR_OUT;
     if (!strcmp(value, ">>")) return APPEND;
     if (!strcmp(value, "<<")) return HEREDOC;
-    free(value);
     return WORD;
 }
 
@@ -50,7 +49,9 @@ t_token *tokenize(char *input)
         if (operator_len)
         {
             input += operator_len;
-            type = get_token_type(ft_substr(token, 0, operator_len));
+            char *op = ft_substr(token, 0, operator_len);
+            type = get_token_type(op);
+            free(op);
         }
         else
         {

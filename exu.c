@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/02 12:39:54 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/02 17:26:55 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,32 @@ void execute_command(t_ms *ms)
             }
             tmp = tmp->next;
         }
+        else if (tmp->type == APPEND)
+        {
+            if (fd_out != -1)
+            {
+                close(fd_out);
+                fd_out = -1;
+            }
+            fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_APPEND, 0644);
+            if (fd_out == -1)
+            {
+                perror("open");
+                exit(1);
+            }
+            tmp = tmp->next;
+        }
+        else if (tmp->type == HEREDOC)
+        {
+            // Handle heredoc here
+            // fd_in = open(tmp->next->value, O_RDONLY);
+            // if (fd_in == -1)
+            // {
+            //     perror("open");
+            //     exit(1);
+            // }
+            tmp = tmp->next;
+        }
         if (!tmp->next || tmp->type == PIPE)
         {
             char **args = ft_split(cmd, ' ');
@@ -144,11 +170,11 @@ void execute_command(t_ms *ms)
                     if (fd_out != -1)
                     {
                         if (tmp->type == PIPE)
-                    {
-                        close(fd[0]);
-                        dup2(fd[1], STDOUT_FILENO);
-                        close(fd[1]);
-                    }
+                        {
+                            close(fd[0]);
+                            dup2(fd[1], STDOUT_FILENO);
+                            close(fd[1]);
+                        }
                         dup2(fd_out, STDOUT_FILENO);
                         close(fd_out);
                     }

@@ -6,12 +6,11 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/28 11:53:48 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/02 15:50:54 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
 
 // checj any quotes in the input
 int check_quotes(char *input)
@@ -119,5 +118,7 @@ int main(int argc, char **argv, char **envp)
 		free(input);
 		free(expanded_input);
 	}
+	free_args(ms->envp_cpy);
+	free(ms);
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/27 11:08:12 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/02 15:49:39 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,4 +65,5 @@ void free_tokens(t_token *tokens);
 int check_token(t_ms *ms);
 void execute_command(t_ms *ms);
 void free_args(char **args);
+void free_env(char **envp);
 #endif
