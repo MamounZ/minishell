@@ -22,7 +22,6 @@ Makefile
 minishell
 minishell.h
 o
-os
 ou
 out
 pwd.c

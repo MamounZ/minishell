@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/02 17:26:55 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/03 09:26:46 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void execute_command(t_ms *ms)
             if (fd_out == -1)
             {
                 perror("open");
-                exit(1);
+                break ;
             }
             tmp = tmp->next;
         }
@@ -95,7 +95,7 @@ void execute_command(t_ms *ms)
             if (fd_in == -1)
             {
                 perror("open");
-                exit(1);
+                break ;
             }
             tmp = tmp->next;
         }
@@ -110,7 +110,7 @@ void execute_command(t_ms *ms)
             if (fd_out == -1)
             {
                 perror("open");
-                exit(1);
+                break ;
             }
             tmp = tmp->next;
         }
