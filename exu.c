@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/03 19:13:10 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/04 13:43:34 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,41 +131,19 @@ void execute_command(t_ms *ms) {
                     }
                     else if (prev_fd != -1)
                     {
-                        if (tmp->type == PIPE)
-                        {
-                            dup2(fd[0], STDIN_FILENO);
-                            close(fd[0]);
-                        }
                         dup2(prev_fd, STDIN_FILENO);
-                        close(fd[0]);
                         close(prev_fd);
-                    } 
-                    else
-                    {
-                        dup2(fd[0], STDIN_FILENO);
-                        close(fd[0]);
                     }
                     if (fd_out != -1)
                     {
-                        if (tmp->type == PIPE)
-                        {
-                            close(fd[0]);
-                            dup2(fd[1], STDOUT_FILENO);
-                            close(fd[1]);
-                        }
                         dup2(fd_out, STDOUT_FILENO);
                         close(fd_out);
                     }
-                    else if
-                    (tmp->type == PIPE)
+                    else if (tmp->type == PIPE)
                     {
                         close(fd[0]);
                         dup2(fd[1], STDOUT_FILENO);
                         close(fd[1]);
-                    }
-                    else
-                    {
-                        dup2(stdout_copy, STDOUT_FILENO);
                     }
                     free(cmd);
                     cmd = get_cmd_path(args[0], ms);
@@ -178,11 +156,11 @@ void execute_command(t_ms *ms) {
                 {
                     if (prev_fd != -1)
                         close(prev_fd);
-                    if (tmp->type == PIPE) {
+                    if (tmp->type == PIPE)
+                    {
                         close(fd[1]);
                         prev_fd = fd[0];
                     }
-                    wait(NULL);
                     free(cmd);
                     free_args(args);
                     if (fd_out != -1)
@@ -200,6 +178,11 @@ void execute_command(t_ms *ms) {
             }
         }
         tmp = tmp->next;
+    }
+    
+    // wait(NULL);
+    int status;
+    while ((wait(&status)) > 0) {
     }
     dup2(stdin_copy, STDIN_FILENO);
     dup2(stdout_copy, STDOUT_FILENO);
