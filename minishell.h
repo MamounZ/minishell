@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/16 22:35:42 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/22 20:17:52 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ typedef struct s_token {
 typedef struct s_ms
 {
 	char	**envp_cpy;
-	t_token *tokens;
+    char    **new_env;
+    t_token *tokens;
 }		t_ms;
 
 void copy_env(char **envp, t_ms *ms);
