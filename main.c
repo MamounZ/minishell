@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/18 23:49:30 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/03/22 20:18:27 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ int main(int argc, char **argv, char **envp)
 	if (!ms)
 		return (0);
 	ms->envp_cpy = NULL;
+	ms->new_env = NULL;
 	copy_env(envp, ms);
 	setup_signals();
 	while (1)
