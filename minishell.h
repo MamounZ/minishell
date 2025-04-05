@@ -39,7 +39,8 @@ typedef struct s_token {
 typedef struct s_ms
 {
 	char	**envp_cpy;
-	t_token *tokens;
+    char    **new_env;
+    t_token *tokens;
 }		t_ms;
 
 void copy_env(char **envp, t_ms *ms);

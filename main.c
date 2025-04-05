@@ -87,6 +87,7 @@ int main(int argc, char **argv, char **envp)
 	if (!ms)
 		return (0);
 	ms->envp_cpy = NULL;
+	ms->new_env = NULL;
 	copy_env(envp, ms);
 	setup_signals();
 	while (1)
