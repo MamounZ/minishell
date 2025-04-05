@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/22 20:17:52 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/04/02 15:49:39 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "libft/includes/libft.h"
 #include "libft/includes/get_next_line.h"
 #include "libft/includes/ft_printf.h"
+#include <sys/wait.h>
+
 
 typedef enum e_token_type {
     WORD, PIPE, REDIR_IN, REDIR_OUT, HEREDOC, APPEND
@@ -60,5 +63,8 @@ void print_tokens(t_token *tokens);
 t_token *new_token(char *value, t_token_type type);
 void add_token(t_token **tokens, t_token *new_token);
 void free_tokens(t_token *tokens);
-
+int check_token(t_ms *ms);
+void execute_command(t_ms *ms);
+void free_args(char **args);
+void free_env(char **envp);
 #endif

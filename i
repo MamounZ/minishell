@@ -1,0 +1,4 @@
+yaman
+test
+solve
+kill
