@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/06 20:47:35 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/06 22:04:01 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,16 +215,10 @@ void execute_command(t_ms *ms)
                     fd_in = -1;
                 }
             }
-            
-            if (!co && !tmp->next && !ft_strcmp(tm[0], "cd"))
-            {
+            if (!co && !tmp->next && tm && (!ft_strcmp(tm[0], "cd") || !ft_strcmp(tm[0], "export") ||
+            !ft_strcmp(tm[0], "unset")))
                 execute_builtin(tm, ms);
-                free_args(tm);
-                // free(cmd);
-                // cmd = ft_strdup("");
-            }
-            else
-                free_args(tm);
+            free_args(tm);
             tm = NULL;
         }
         tmp = tmp->next;
