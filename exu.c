@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/06 20:39:47 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/06 20:47:35 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,6 +203,7 @@ void execute_command(t_ms *ms)
                 }
                 free(cmd);
                 free_args(args);
+                args = NULL;
                 if (fd_out != -1)
                 {
                     close(fd_out);
@@ -222,6 +223,9 @@ void execute_command(t_ms *ms)
                 // free(cmd);
                 // cmd = ft_strdup("");
             }
+            else
+                free_args(tm);
+            tm = NULL;
         }
         tmp = tmp->next;
     }
