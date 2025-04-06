@@ -1,4 +1,0 @@
-yaman
-test
-solve
-kill

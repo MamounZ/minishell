@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/04 22:45:31 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/06 15:11:50 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ void print_args(char **args) {
 void execute_command(t_ms *ms) {
     char *cmd = ft_strdup("");
     char *path = NULL;
+    char **tm;
     t_token *tmp = ms->tokens;
     pid_t pid;
     int fd[2], prev_fd = -1;
@@ -46,6 +47,7 @@ void execute_command(t_ms *ms) {
     int stdout_copy = dup(STDOUT_FILENO);
     int fd_in = -1;
     int fd_out = -1;
+    int co = 0;
     
     while (tmp) {
         if (tmp->type == WORD)
@@ -107,10 +109,15 @@ void execute_command(t_ms *ms) {
         if (!tmp->next || tmp->type == PIPE)
         {
             char **args = ft_split(cmd, ' ');
-            if (tmp->type == PIPE && pipe(fd) == -1)
+            tm = ft_split(cmd, ' ');
+            if (tmp->type == PIPE)
             {
-                perror("pipe");
-                exit(1);
+                if (pipe(fd) == -1)
+                {
+                    perror("pipe");
+                    exit(1);
+                }
+                co++;
             }
             pid = fork();
             if (pid == 0)
@@ -175,6 +182,14 @@ void execute_command(t_ms *ms) {
                     fd_in = -1;
                 }
                 cmd = ft_strdup("");
+            }
+            
+            if (!co && !tmp->next && !ft_strcmp(tm[0], "cd"))
+            {
+                execute_builtin(tm, ms);
+                free_args(tm);
+                // free(cmd);
+                // cmd = ft_strdup("");
             }
         }
         tmp = tmp->next;
