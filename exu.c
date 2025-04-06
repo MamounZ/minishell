@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/06 15:11:50 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/06 20:39:47 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,48 @@ void print_args(char **args) {
     }
     printf("---------\n");
 }
-void execute_command(t_ms *ms) {
-    char *cmd = ft_strdup("");
-    char *path = NULL;
-    char **tm;
+
+char **re_aloc_new_2p(char **new, char *var)
+{
+    int i = 0;
+    char **tmp = new;    
+    
+    if (!new)
+    {
+        tmp = malloc(sizeof(char *) * 2);
+        if (!tmp) {
+            perror("malloc");
+            return (NULL);
+        }
+        tmp[0] = ft_strdup(var);
+        tmp[1] = NULL;
+        return (tmp);
+    }
+    while (new[i])
+    {
+        i++;
+    }
+    tmp = malloc(sizeof(char *) * (i + 2));
+    if (!new) {
+        perror("realloc");
+        return (NULL);
+    }
+    i = 0;
+    while (new[i])
+    {
+        tmp[i] = new[i];
+        i++;
+    }
+    tmp[i] = ft_strdup(var);
+    tmp[i + 1] = NULL;
+    free(new);
+    return (tmp);
+}
+
+void execute_command(t_ms *ms)
+{
+    char *cmd = NULL;
+    char **tm = NULL;
     t_token *tmp = ms->tokens;
     pid_t pid;
     int fd[2], prev_fd = -1;
@@ -48,14 +86,13 @@ void execute_command(t_ms *ms) {
     int fd_in = -1;
     int fd_out = -1;
     int co = 0;
+    char **args = NULL;
     
     while (tmp) {
         if (tmp->type == WORD)
         {
-            path = ft_strjoin(cmd, " ");
-            free(cmd);
-            cmd = ft_strjoin(path, tmp->value);
-            free(path);
+            args = re_aloc_new_2p(args, tmp->value);
+            tm = re_aloc_new_2p(tm, tmp->value);
         }
         else if (tmp->type == REDIR_OUT)
         {
@@ -108,8 +145,6 @@ void execute_command(t_ms *ms) {
         }
         if (!tmp->next || tmp->type == PIPE)
         {
-            char **args = ft_split(cmd, ' ');
-            tm = ft_split(cmd, ' ');
             if (tmp->type == PIPE)
             {
                 if (pipe(fd) == -1)
@@ -147,12 +182,9 @@ void execute_command(t_ms *ms) {
                 {
                     execute_builtin(args, ms);
                     free_args(args);
-                    free(cmd);
-                    cmd = ft_strdup("");
                 }
                 else 
                 {
-                    free(cmd);
                     cmd = get_cmd_path(args[0], ms);
                     execve(cmd, args, ms->envp_cpy);
                     perror("execve");
@@ -181,7 +213,6 @@ void execute_command(t_ms *ms) {
                     close(fd_in);
                     fd_in = -1;
                 }
-                cmd = ft_strdup("");
             }
             
             if (!co && !tmp->next && !ft_strcmp(tm[0], "cd"))
