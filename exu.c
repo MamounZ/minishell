@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/06 22:04:01 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/10 11:25:53 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,10 @@ void execute_command(t_ms *ms)
                 }
                 else 
                 {
-                    cmd = get_cmd_path(args[0], ms);
+                    if (args[0][0] == '/' || (args[0][0] == '.' && args[0][1] == '/'))
+                        cmd = ft_strdup(args[0]);
+                    else
+                        cmd = get_cmd_path(args[0], ms);
                     execve(cmd, args, ms->envp_cpy);
                     perror("execve");
                     free_args(args);
