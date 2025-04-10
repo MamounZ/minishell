@@ -92,17 +92,36 @@ void print_tokens(t_token *tokens) {
     }
 }
 
-// void fix_tokens(t_token **tokens)
-// {
-//     t_token *tmp = *tokens;
-//     t_token *tmp2;
-//     while (tmp)
-//     {
-//         if (tmp->type == HEREDOC || tmp->type == APPEND || tmp->type == REDIR_IN || tmp->type == REDIR_OUT)
-//         {
-//             free(tmp->value);
-//             tmp->next->type = tmp->type;
-//         }
-//         tmp = tmp->next;
-//     }
-// }
+void rm_quote(t_ms *ms)
+{
+    t_token *tmp = ms->tokens;
+    int in_quotes = 0;
+    char quote_char;
+    while (tmp)
+    {
+        int j = 0;
+        int i = 0;
+        if (tmp->type == WORD)
+        {
+            while (tmp->value[i])
+            {
+                if (is_quote(tmp->value[i]))
+                {
+                    quote_char = tmp->value[i];
+                    in_quotes = !in_quotes;
+                    i++;
+                    continue;
+                }
+                if (in_quotes && tmp->value[i] == quote_char)
+                {
+                    i++;
+                    in_quotes = 0;
+                    continue;
+                }
+                tmp->value[j++] = tmp->value[i++];
+            }
+        }
+        tmp->value[j] = '\0';
+        tmp = tmp->next;
+    }
+}
