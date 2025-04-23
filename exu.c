@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/10 11:25:53 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/23 08:18:11 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,6 +141,47 @@ void execute_command(t_ms *ms)
         }
         else if (tmp->type == HEREDOC)
         {
+            int pipe_fd[2];
+            if (pipe(pipe_fd) == -1)
+            {
+                perror("pipe");
+                break;
+            }
+            char *line = NULL;
+            size_t len = 0;
+            ssize_t read_len;
+
+            // Read lines from stdin until the delimiter is encountered
+            while (1)
+            {
+                printf("> ");
+                read_len = getline(&line, &len, stdin);
+                if (read_len == -1)
+                {
+                    perror("getline");
+                    free(line);
+                    close(pipe_fd[0]);
+                    close(pipe_fd[1]);
+                    break;
+                }
+                // Remove the trailing newline character
+                char *new = expand_variables(NULL, line, ms, 0);
+                int si = ft_strlen(new);
+                if (new[si - 1] == '\n')
+                    new[si - 1] = '\0';
+                if (strcmp(new, tmp->next->value) == 0)
+                    break;
+                write(pipe_fd[1], new, ft_strlen(new));
+                write(pipe_fd[1], "\n", 1);
+            }
+            free(line);
+            close(pipe_fd[1]);
+            if (fd_in != -1)
+            {
+                close(fd_in);
+                fd_in = -1;
+            }
+            fd_in = pipe_fd[0];
             tmp = tmp->next;
         }
         if (!tmp->next || tmp->type == PIPE)
@@ -159,6 +200,7 @@ void execute_command(t_ms *ms)
             {
                 if (fd_in != -1)
                 {
+                    // fprintf(stderr, "fd_in: %d\n", fd_in);
                     dup2(fd_in, STDIN_FILENO);
                     close(fd_in);
                 }
@@ -178,20 +220,25 @@ void execute_command(t_ms *ms)
                     dup2(fd[1], STDOUT_FILENO);
                     close(fd[1]);
                 }
-                if (is_builtin(args[0]))
+                if (args)
                 {
-                    execute_builtin(args, ms);
-                    free_args(args);
-                }
-                else 
-                {
-                    if (args[0][0] == '/' || (args[0][0] == '.' && args[0][1] == '/'))
-                        cmd = ft_strdup(args[0]);
-                    else
-                        cmd = get_cmd_path(args[0], ms);
-                    execve(cmd, args, ms->envp_cpy);
-                    perror("execve");
-                    free_args(args);
+                    if (is_builtin(args[0]))
+                    {
+                        execute_builtin(args, ms);
+                        free_args(args);
+                    }
+                    else 
+                    {
+                        
+                            if (args[0][0] == '/' || (args[0][0] == '.' && args[0][1] == '/'))
+                                cmd = ft_strdup(args[0]);
+                            else
+                                cmd = get_cmd_path(args[0], ms);
+                            execve(cmd, args, ms->envp_cpy);
+                            perror("execve");
+                            free_args(args);
+                        
+                    }
                 }
                 exit(1);
             }
@@ -205,8 +252,11 @@ void execute_command(t_ms *ms)
                     prev_fd = fd[0];
                 }
                 free(cmd);
-                free_args(args);
-                args = NULL;
+                if (args)
+                {
+                    free_args(args);
+                    args = NULL;
+                }
                 if (fd_out != -1)
                 {
                     close(fd_out);
@@ -221,13 +271,12 @@ void execute_command(t_ms *ms)
             if (!co && !tmp->next && tm && (!ft_strcmp(tm[0], "cd") || !ft_strcmp(tm[0], "export") ||
             !ft_strcmp(tm[0], "unset")))
                 execute_builtin(tm, ms);
-            free_args(tm);
+            if (tm)
+                free_args(tm);
             tm = NULL;
         }
         tmp = tmp->next;
     }
-    
-    // wait(NULL);
     int status;
     while ((wait(&status)) > 0) {
     }
