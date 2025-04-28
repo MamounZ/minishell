@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/04/10 18:20:59 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/28 22:05:04 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,20 @@ typedef struct s_token {
     struct s_token *next;
 } t_token;
 
+typedef struct s_cmd {
+    char **args;
+    char *path;
+    int fd_in;
+    int fd_out;
+    struct s_cmd *next;
+} t_cmd;
 
 typedef struct s_ms
 {
 	char	**envp_cpy;
     char    **new_env;
     t_token *tokens;
+    t_cmd   *cmds;
 }		t_ms;
 
 void copy_env(char **envp, t_ms *ms);
@@ -68,4 +76,8 @@ void execute_command(t_ms *ms);
 void free_args(char **args);
 void free_env(char **envp);
 void rm_quote(t_ms *ms);
+void exec_cmd(t_ms *ms);
+char *get_cmd_path(char *cmd, t_ms *ms);
+void fill_cmds(t_ms *ms);
+void free_cmds(t_cmd *cmds);
 #endif

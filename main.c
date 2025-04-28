@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/04/10 21:11:20 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/28 22:05:00 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,17 +110,23 @@ int main(int argc, char **argv, char **envp)
 		ms->tokens = tokenize(expanded_input);
 		check_token(ms);
 		rm_quote(ms);
-		// fix_tokens(&ms->tokens);
-		// print_tokens(ms->tokens);
-		// cmd_args = tokens_to_args(ms->tokens);
-		// if (is_builtin(cmd_args[0]))
-		// 	execute_builtin(cmd_args, ms);
-		execute_command(ms);
-		
+		/* fix_tokens(&ms->tokens);
+		print_tokens(ms->tokens);
+		cmd_args = tokens_to_args(ms->tokens);
+		if (is_builtin(cmd_args[0]))
+			execute_builtin(cmd_args, ms);
+		execute_command(ms);*/
+		fill_cmds(ms);
+		exec_cmd(ms);
 		free(input);
 		free(expanded_input);
+		free_tokens(ms->tokens);
+		free_cmds(ms->cmds);
+		ms->tokens = NULL;
+		ms->cmds = NULL;
 	}
 	free_args(ms->envp_cpy);
 	free(ms);
+	
 	return (0);
 }
