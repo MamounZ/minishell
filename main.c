@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/04/28 22:05:00 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/28 23:58:06 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,11 @@ int main(int argc, char **argv, char **envp)
 			printf("exit\n");
 			break;
 		}
+		if (ft_strlen(input) == 0)
+		{
+			free(input);
+			continue;
+		}
 		if (*input)
 			add_history(input);
 		if (check_quotes(input))
@@ -110,8 +115,8 @@ int main(int argc, char **argv, char **envp)
 		ms->tokens = tokenize(expanded_input);
 		check_token(ms);
 		rm_quote(ms);
-		/* fix_tokens(&ms->tokens);
-		print_tokens(ms->tokens);
+		//fix_tokens(&ms->tokens);
+		/*print_tokens(ms->tokens);
 		cmd_args = tokens_to_args(ms->tokens);
 		if (is_builtin(cmd_args[0]))
 			execute_builtin(cmd_args, ms);
@@ -121,9 +126,11 @@ int main(int argc, char **argv, char **envp)
 		free(input);
 		free(expanded_input);
 		free_tokens(ms->tokens);
-		free_cmds(ms->cmds);
+		// free_cmds(ms->cmds);
 		ms->tokens = NULL;
 		ms->cmds = NULL;
+		expanded_input = NULL;
+		input = NULL;
 	}
 	free_args(ms->envp_cpy);
 	free(ms);

@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/28 22:35:22 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/29 00:03:29 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,14 @@ void exec_cmd(t_ms *ms)
     pid_t pid;
     int stdin_copy = dup(STDIN_FILENO);
     int stdout_copy = dup(STDOUT_FILENO);
+
+    if (!tmp->next && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
+    !ft_strcmp(tmp->args[0], "unset")))
+    {
+        // print_tokens(ms->tokens);
+        execute_builtin(tmp->args, ms);
+        return ;
+    }
     
     while (tmp)
     {
@@ -177,11 +185,22 @@ void exec_cmd(t_ms *ms)
                 dup2(fd[1], STDOUT_FILENO);
                 close(fd[1]);
             }
-            cmd = get_cmd_path(tmp->args[0], ms);
-            // fprintf(stderr, "Command: %s\n", cmd);
-            execve(cmd, tmp->args, ms->envp_cpy);
-            perror("execve");
-            free(cmd);
+            if (is_builtin(tmp->args[0]))
+            {
+                execute_builtin(tmp->args, ms);
+                free_args(tmp->args);
+            }
+            else 
+            {               
+                if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
+                    cmd = ft_strdup(tmp->args[0]);
+                else
+                    cmd = get_cmd_path(tmp->args[0], ms);
+                execve(cmd, tmp->args, ms->envp_cpy);
+                perror("execve");
+                free_args(tmp->args);
+                free(cmd);
+            }
         }
         else
         {
