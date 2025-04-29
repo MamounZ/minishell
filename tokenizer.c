@@ -105,14 +105,13 @@ void rm_quote(t_ms *ms)
         {
             while (tmp->value[i])
             {
-                if (is_quote(tmp->value[i]))
+                if (is_quote(tmp->value[i]) && !in_quotes)
                 {
                     quote_char = tmp->value[i];
                     in_quotes = !in_quotes;
                     i++;
-                    continue;
                 }
-                if (in_quotes && tmp->value[i] == quote_char)
+                else if (in_quotes && tmp->value[i] == quote_char)
                 {
                     i++;
                     in_quotes = 0;

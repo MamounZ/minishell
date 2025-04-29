@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/04/28 22:05:04 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/29 18:28:21 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ typedef struct s_ms
     char    **new_env;
     t_token *tokens;
     t_cmd   *cmds;
+    char    **argv;
 }		t_ms;
 
 void copy_env(char **envp, t_ms *ms);

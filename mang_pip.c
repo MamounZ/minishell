@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/29 00:03:29 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/29 15:58:38 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,7 +188,6 @@ void exec_cmd(t_ms *ms)
             if (is_builtin(tmp->args[0]))
             {
                 execute_builtin(tmp->args, ms);
-                free_args(tmp->args);
             }
             else 
             {               
@@ -198,9 +197,9 @@ void exec_cmd(t_ms *ms)
                     cmd = get_cmd_path(tmp->args[0], ms);
                 execve(cmd, tmp->args, ms->envp_cpy);
                 perror("execve");
-                free_args(tmp->args);
                 free(cmd);
             }
+            exit(1);
         }
         else
         {
