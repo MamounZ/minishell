@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/30 14:33:06 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/30 16:18:21 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,16 @@ void add_cmd(t_ms *ms, t_cmd *cmd)
         tmp->next = cmd;
     }
 }
-
+int token_size(t_token *tmp)
+{
+    int size = 0;
+    while (tmp)
+    {
+        size++;
+        tmp = tmp->next;
+    }
+    return (size);
+}
 void fill_cmds_file(t_ms *ms)
 {
     t_token *tmp = ms->tokens;
@@ -68,11 +77,38 @@ void fill_cmds_file(t_ms *ms)
         if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND)
         {
             if (tmp->type == REDIR_OUT)
+            {
+                if (cmd->fd_out != -1)
+                    close(cmd->fd_out);
                 cmd->fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (cmd->fd_out == -1)
+                {
+                    perror("open");
+                    break;
+                }
+            }
             else if (tmp->type == REDIR_IN)
+            {
+                if (cmd->fd_in != -1)
+                    close(cmd->fd_in);
                 cmd->fd_in = open(tmp->next->value, O_RDONLY);
+                if (cmd->fd_in == -1)
+                {
+                    perror("open");
+                    break;
+                }
+            }
             else if (tmp->type == APPEND)
+            {
+                if (cmd->fd_out != -1)
+                    close(cmd->fd_out);
                 cmd->fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_APPEND, 0644);
+                if (cmd->fd_out == -1)
+                {
+                    perror("open");
+                    break;
+                }
+            }
             tmp = tmp->next;
         }
         else if (tmp->type == HEREDOC)
@@ -112,14 +148,13 @@ void fill_cmds_file(t_ms *ms)
             }
             free(line);
             close(pipe_fd[1]);
+            if (cmd->fd_in != -1)
+                close(cmd->fd_in);
             cmd->fd_in = pipe_fd[0];
             tmp = tmp->next;
         }
         else if (tmp->type != PIPE)
-        {
-            // fprintf(stderr, "tmp->value: %s\n", tmp->value);
             add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type));
-        }
         if (tmp->type == PIPE || !tmp->next)
         {
             add_cmd(ms, cmd);
@@ -153,12 +188,13 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     char *expanded_input = expand_variables(NULL, input, ms, 0);
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
+    t_token *tmp2 = tmp;
     free(input);
     free(expanded_input);
     rm_quote(tmp);
     // print_tokens(tmp);
     
-    cmd->args = malloc(sizeof(char *) * (num_of_words(tmp) + 1));
+    cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));
     while (tmp)
     {
         if (tmp->type == REDIR_IN)
@@ -176,6 +212,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
         i++;
         tmp = tmp->next;
     }
+    free_tokens(tmp2);
     cmd->args[i] = NULL;
 }
 
@@ -266,7 +303,9 @@ void exec_cmd(t_ms *ms)
     while ((wait(&status)) > 0) {
     }
     dup2(stdin_copy, STDIN_FILENO);
+    close(stdin_copy);
     dup2(stdout_copy, STDOUT_FILENO);
+    close(stdout_copy);
 }
 
 void free_cmds(t_cmd *cmds)
