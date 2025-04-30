@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/23 08:18:11 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/29 20:01:13 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,6 @@ char *get_cmd_path(char *cmd, t_ms *ms) {
     }
     free_args(paths);
     return (NULL);
-}
-void print_args(char **args) {
-    printf("---------\n");
-    int i = 0;
-    while (args[i]) {
-        printf("%s\n", args[i]);
-        i++;
-    }
-    printf("---------\n");
 }
 
 char **re_aloc_new_2p(char **new, char *var)

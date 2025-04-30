@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/29 15:58:38 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/30 14:33:06 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,11 @@ int num_of_words(t_token *tmp)
 
 t_cmd *create_cmd(t_token *tmp)
 {
+    (void) tmp;
     t_cmd *cmd = malloc(sizeof(t_cmd));
     if (!cmd)
         return (NULL);
-    cmd->args = malloc(sizeof(char *) * (num_of_words(tmp) + 1));
-    if (!cmd->args)
-        return (NULL);
+    cmd->args = NULL;
     cmd->path = NULL;
     cmd->fd_in = -1;
     cmd->fd_out = -1;
@@ -58,21 +57,15 @@ void add_cmd(t_ms *ms, t_cmd *cmd)
     }
 }
 
-void fill_cmds(t_ms *ms)
+void fill_cmds_file(t_ms *ms)
 {
     t_token *tmp = ms->tokens;
-    int i = 0;
     t_cmd *cmd = create_cmd(tmp);
+    t_token *tm = NULL;
 
     while (tmp)
     {
-        
-        if (tmp->type == WORD)
-        {
-            cmd->args[i] = ft_strdup(tmp->value);
-            i++;
-        }
-        else if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND)
+        if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND)
         {
             if (tmp->type == REDIR_OUT)
                 cmd->fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -122,11 +115,17 @@ void fill_cmds(t_ms *ms)
             cmd->fd_in = pipe_fd[0];
             tmp = tmp->next;
         }
+        else if (tmp->type != PIPE)
+        {
+            // fprintf(stderr, "tmp->value: %s\n", tmp->value);
+            add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type));
+        }
         if (tmp->type == PIPE || !tmp->next)
         {
-            cmd->args[i] = NULL;
             add_cmd(ms, cmd);
-            i = 0;
+            fill_cmds(cmd, tm, ms);
+            free_tokens(tm);
+            tm = NULL;
             if (tmp->type == PIPE)
             {
                 cmd = create_cmd(tmp->next);
@@ -134,6 +133,50 @@ void fill_cmds(t_ms *ms)
         }
         tmp = tmp->next;
     }
+}
+
+void print_args(char **args) {
+    fprintf(stderr, "---------\n");
+    int i = 0;
+    while (args[i]) {
+        fprintf(stderr, "%s\n", args[i]);
+        i++;
+    }
+    fprintf(stderr, "---------\n");
+}
+
+void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
+{
+    t_token *tmp = tm;
+    int i = 0;
+    char *input = tokenize_to_char(tm);
+    char *expanded_input = expand_variables(NULL, input, ms, 0);
+    // fprintf(stderr, "expanded_input: %s\n", expanded_input);
+    tmp = tokenize(expanded_input);
+    free(input);
+    free(expanded_input);
+    rm_quote(tmp);
+    // print_tokens(tmp);
+    
+    cmd->args = malloc(sizeof(char *) * (num_of_words(tmp) + 1));
+    while (tmp)
+    {
+        if (tmp->type == REDIR_IN)
+            cmd->args[i] = ft_strdup("<");
+        else if (tmp->type == REDIR_OUT)
+            cmd->args[i] = ft_strdup(">");
+        else if (tmp->type == APPEND)
+            cmd->args[i] = ft_strdup(">>");
+        else if (tmp->type == HEREDOC)
+            cmd->args[i] = ft_strdup("<<");
+        else if (tmp->type == PIPE)
+            cmd->args[i] = ft_strdup("|");
+        else
+            cmd->args[i] = ft_strdup(tmp->value);
+        i++;
+        tmp = tmp->next;
+    }
+    cmd->args[i] = NULL;
 }
 
 void exec_cmd(t_ms *ms)
@@ -146,10 +189,10 @@ void exec_cmd(t_ms *ms)
     int stdin_copy = dup(STDIN_FILENO);
     int stdout_copy = dup(STDOUT_FILENO);
 
-    if (!tmp->next && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
+    if (!tmp->next&& (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
     !ft_strcmp(tmp->args[0], "unset")))
     {
-        // print_tokens(ms->tokens);
+        // print_args(tmp->args);
         execute_builtin(tmp->args, ms);
         return ;
     }
@@ -195,6 +238,8 @@ void exec_cmd(t_ms *ms)
                     cmd = ft_strdup(tmp->args[0]);
                 else
                     cmd = get_cmd_path(tmp->args[0], ms);
+                // print_args(tmp->args);
+                // printf("\n\n\n\n\n");
                 execve(cmd, tmp->args, ms->envp_cpy);
                 perror("execve");
                 free(cmd);

@@ -92,9 +92,9 @@ void print_tokens(t_token *tokens) {
     }
 }
 
-void rm_quote(t_ms *ms)
+void rm_quote(t_token *ms)
 {
-    t_token *tmp = ms->tokens;
+    t_token *tmp = ms;
     int in_quotes = 0;
     char quote_char;
     while (tmp)

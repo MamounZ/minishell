@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/04/29 18:47:42 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/04/30 14:33:17 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ void free_args(char **args)
 int main(int argc, char **argv, char **envp)
 {
 	char	*input;
-	char *expanded_input;
+	// char *expanded_input;
 	t_ms	*ms;
 
 	(void) argv;
@@ -88,6 +88,9 @@ int main(int argc, char **argv, char **envp)
 		return (0);
 	ms->envp_cpy = NULL;
 	ms->new_env = NULL;
+	ms->tokens = NULL;
+	ms->cmds = NULL;
+	
 	copy_env(envp, ms);
 	setup_signals();
 	ms->argv = argv;
@@ -111,27 +114,29 @@ int main(int argc, char **argv, char **envp)
 			free(input);
 			continue;
 		}
-		expanded_input = expand_variables(argv, input, ms, 1);
+		// expanded_input = expand_variables(argv, input, ms, 1);
 		// ft_printf("%s\n", expanded_input);
 		// expanded_input = input;
-		ms->tokens = tokenize(expanded_input);
+		ms->tokens = tokenize(input);
+		// print_tokens(ms->tokens);
 		check_token(ms);
-		rm_quote(ms);
+		fill_cmds_file(ms);
+		// free(input);
+		// expanded_input = 
 		//fix_tokens(&ms->tokens);
 		// print_tokens(ms->tokens);
 		/*cmd_args = tokens_to_args(ms->tokens);
 		if (is_builtin(cmd_args[0]))
 			execute_builtin(cmd_args, ms);
 		execute_command(ms);*/
-		fill_cmds(ms);
 		exec_cmd(ms);
 		free(input);
-		free(expanded_input);
+		// free(expanded_input);
 		free_tokens(ms->tokens);
 		// free_cmds(ms->cmds);
 		ms->tokens = NULL;
 		ms->cmds = NULL;
-		expanded_input = NULL;
+		// expanded_input = NULL;
 		input = NULL;
 	}
 	free_args(ms->envp_cpy);
