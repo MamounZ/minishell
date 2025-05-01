@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/01 12:52:42 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/01 19:49:12 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ t_cmd *create_cmd(t_token *tmp)
     cmd->fd_in = -1;
     cmd->fd_out = -1;
     cmd->next = NULL;
+    cmd->it_is_ok = 1;
     return (cmd);
 }
 
@@ -103,7 +104,7 @@ void fill_cmds_file(t_ms *ms)
     {
         if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND)
         {
-            if (tmp->type == REDIR_OUT)
+            if (tmp->type == REDIR_OUT && cmd->it_is_ok)
             {
                 if (cmd->fd_out != -1)
                     close(cmd->fd_out);
@@ -111,10 +112,10 @@ void fill_cmds_file(t_ms *ms)
                 if (cmd->fd_out == -1)
                 {
                     perror("open");
-                    break;
+                    cmd->it_is_ok = 0;
                 }
             }
-            else if (tmp->type == REDIR_IN)
+            else if (tmp->type == REDIR_IN && cmd->it_is_ok)
             {
                 if (cmd->fd_in != -1)
                     close(cmd->fd_in);
@@ -122,10 +123,10 @@ void fill_cmds_file(t_ms *ms)
                 if (cmd->fd_in == -1)
                 {
                     perror("open");
-                    break;
+                    cmd->it_is_ok = 0;
                 }
             }
-            else if (tmp->type == APPEND)
+            else if (tmp->type == APPEND && cmd->it_is_ok)
             {
                 if (cmd->fd_out != -1)
                     close(cmd->fd_out);
@@ -133,7 +134,7 @@ void fill_cmds_file(t_ms *ms)
                 if (cmd->fd_out == -1)
                 {
                     perror("open");
-                    break;
+                    cmd->it_is_ok = 0;
                 }
             }
             tmp = tmp->next;
@@ -152,7 +153,7 @@ void fill_cmds_file(t_ms *ms)
             ssize_t read_len;
 
             // Read lines from stdin until the delimiter is encountered
-            fprintf(stderr, "heredoc: %s\n", tmp->next->value);
+            // fprintf(stderr, "heredoc: %s\n", tmp->next->value);
             while (1)
             {
                 printf("> ");
@@ -166,11 +167,13 @@ void fill_cmds_file(t_ms *ms)
                     break;
                 }
                 // Remove the trailing newline character
-                char *new = line;//expand_variables(NULL, line, ms, 0);
+                char *new = expand_variables(NULL, line, ms, 0, -1);
                 int si = ft_strlen(new);
                 if (new[si - 1] == '\n')
                     new[si - 1] = '\0';
-                if (strcmp(new, tmp->next->value) == 0)
+                line[read_len - 1] = '\0';
+                // fprintf(stderr, "new: %d\n", strcmp(line, tmp->next->value));
+                if (strcmp(line, tmp->next->value) == 0)
                     break;
                 write(pipe_fd[1], new, ft_strlen(new));
                 write(pipe_fd[1], "\n", 1);
@@ -218,15 +221,58 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
     // print_tokens(tmp);
-    t_token *tmp2 = tmp;
+    t_token *tmp2 = NULL, *head = tmp;
     free(input);
     free(expanded_input);
-    // rm_quote(tmp);
     
+    while (tmp)
+    {
+        if (ft_strchr(tmp->value, '$'))
+        {
+            input = expand_variables(NULL, tmp->value, ms, 0, 0);
+            t_token *t = tokenize(input);
+            fprintf(stderr, "input: %s\n", tmp->value);
+            fprintf(stderr, "input: %s\n", input);
+            t_token *tmp3 = tmp->next;
+            free(tmp->value);
+            if (!tmp2)
+            {
+                free(tmp);
+                tmp = t;
+                while (t->next)
+                {
+                    t = t->next;
+                }
+                t->next = tmp3;
+                head = tmp;
+                tmp = tmp3;
+                tmp2 = t;
+            }
+            else
+            {
+                tmp2->next = t;
+                while (t->next)
+                {
+                    t = t->next;
+                }
+                t->next = tmp3;
+                tmp2 = t;
+                free(tmp);
+                tmp = tmp3;
+            }
+        }
+        else
+        {
+            tmp2 = tmp;
+            rm_quote_c(tmp->value);
+            tmp = tmp->next;
+        }
+    }
+    tmp = head;
     cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));
     while (tmp)
     {
-        input = expand_variables(NULL, tmp->value, ms, 0, 0);
+        // fprintf(stderr, "input: %s\n", input);
         if (tmp->type == REDIR_IN)
             cmd->args[i] = ft_strdup("<");
         else if (tmp->type == REDIR_OUT)
@@ -238,8 +284,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
         else if (tmp->type == PIPE)
             cmd->args[i] = ft_strdup("|");
         else
-            cmd->args[i] = ft_strdup(input);
-        free(input);
+            cmd->args[i] = ft_strdup(tmp->value);
         i++;
         tmp = tmp->next;
     }
@@ -270,77 +315,87 @@ void exec_cmd(t_ms *ms)
         return ;
     }
     if (!tmp->next && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
-    !ft_strcmp(tmp->args[0], "unset")))
-    {
-        // print_args(tmp->args);
+    !ft_strcmp(tmp->args[0], "unset")) && tmp->it_is_ok)
         execute_builtin(tmp->args, ms);
-        return ;
-    }
-    
-    while (tmp)
+    else
     {
-        if (tmp->next && pipe(fd) == -1)
+        while (tmp)
         {
-            perror("pipe");
-            exit(1);
+            if (tmp->it_is_ok == 0)
+            {
+                if (tmp->fd_in != -1)
+                    close(tmp->fd_in);
+                if (tmp->fd_out != -1)
+                    close(tmp->fd_out);
+                if (prev_fd != -1)
+                    close(prev_fd);
+                prev_fd = -1;
+                tmp = tmp->next;
+                continue;
+            }
+            if (tmp->next && pipe(fd) == -1)
+            {
+                perror("pipe");
+                exit(1);
+            }
+            pid = fork();
+            if (pid == 0)
+            {
+                if (tmp->fd_in != -1)
+                {
+                    dup2(tmp->fd_in, STDIN_FILENO);
+                    close(tmp->fd_in);
+                }
+                else if (prev_fd != -1)
+                {
+                    dup2(prev_fd, STDIN_FILENO);
+                    close(prev_fd);
+                }
+                if (tmp->fd_out != -1)
+                {
+                    dup2(tmp->fd_out, STDOUT_FILENO);
+                    close(tmp->fd_out);
+                }
+                else if (tmp->next)
+                {
+                    close(fd[0]);
+                    dup2(fd[1], STDOUT_FILENO);
+                    close(fd[1]);
+                }
+                if (is_builtin(tmp->args[0]))
+                {
+                    execute_builtin(tmp->args, ms);
+                }
+                else 
+                {               
+                    if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
+                        cmd = ft_strdup(tmp->args[0]);
+                    else
+                        cmd = get_cmd_path(tmp->args[0], ms);
+                    // print_args(tmp->args);
+                    // printf("\n\n\n\n\n");
+                    execve(cmd, tmp->args, ms->envp_cpy);
+                    perror("execve");
+                    free(cmd);
+                }
+                exit(1);
+            }
+            else
+            {
+                if (prev_fd != -1)
+                    close(prev_fd);
+                if (tmp->next)
+                {
+                    close(fd[1]);
+                    prev_fd = fd[0];
+                }
+                if (tmp->fd_in != -1)
+                    close(tmp->fd_in);
+                if (tmp->fd_out != -1)
+                    close(tmp->fd_out);
+            }
+            tmp = tmp->next;
         }
-        pid = fork();
-        if (pid == 0)
-        {
-            if (tmp->fd_in != -1)
-            {
-                dup2(tmp->fd_in, STDIN_FILENO);
-                close(tmp->fd_in);
-            }
-            else if (prev_fd != -1)
-            {
-                dup2(prev_fd, STDIN_FILENO);
-                close(prev_fd);
-            }
-            if (tmp->fd_out != -1)
-            {
-                dup2(tmp->fd_out, STDOUT_FILENO);
-                close(tmp->fd_out);
-            }
-            else if (tmp->next)
-            {
-                close(fd[0]);
-                dup2(fd[1], STDOUT_FILENO);
-                close(fd[1]);
-            }
-            if (is_builtin(tmp->args[0]))
-            {
-                execute_builtin(tmp->args, ms);
-            }
-            else 
-            {               
-                if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
-                    cmd = ft_strdup(tmp->args[0]);
-                else
-                    cmd = get_cmd_path(tmp->args[0], ms);
-                // print_args(tmp->args);
-                // printf("\n\n\n\n\n");
-                execve(cmd, tmp->args, ms->envp_cpy);
-                perror("execve");
-                free(cmd);
-            }
-            exit(1);
-        }
-        else
-        {
-            if (prev_fd != -1)
-                close(prev_fd);
-            if (tmp->next)
-            {
-                close(fd[1]);
-                prev_fd = fd[0];
-            }
-            if (tmp->fd_in != -1)
-                close(tmp->fd_in);
-            if (tmp->fd_out != -1)
-                close(tmp->fd_out);
-        }
-        tmp = tmp->next;
     }
     int status;
     while ((wait(&status)) > 0) {

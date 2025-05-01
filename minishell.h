@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/01 09:13:42 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/01 14:54:02 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ typedef struct s_cmd {
     char *path;
     int fd_in;
     int fd_out;
+    int     it_is_ok;
     struct s_cmd *next;
 } t_cmd;
 
