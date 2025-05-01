@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/30 16:18:21 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/01 09:40:40 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     t_token *tmp = tm;
     int i = 0;
     char *input = tokenize_to_char(tm);
-    char *expanded_input = expand_variables(NULL, input, ms, 0);
+    char *expanded_input = expand_variables(NULL, input, ms, 0, 1);
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
     t_token *tmp2 = tmp;
@@ -197,6 +197,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));
     while (tmp)
     {
+        tmp->value = expand_variables(NULL, tmp->value, ms, 0, 0);
         if (tmp->type == REDIR_IN)
             cmd->args[i] = ft_strdup("<");
         else if (tmp->type == REDIR_OUT)

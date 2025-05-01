@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/15 20:35:12 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/05/01 09:40:19 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ char *ft_getenv(char *var, t_ms *ms)
 	return (NULL);
 }
 // handle echo "\$USER"
-char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
+char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status, int need_quotes)
 {
 	int i;
 	int j;
@@ -111,7 +111,18 @@ char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
 					var_name[j++] = input[i++];
 				var_name[j] = '\0';
 				value = ft_getenv(var_name, ms);
-				if (value)
+				// fprintf(stderr, "value: %s\n", value);
+				if ((ft_strchr(value, '"') || ft_strchr(value, '\'')) && need_quotes)
+				{
+					ft_strcat(expanded, "$");
+					ft_strcat(expanded, var_name);
+				}
+				else if (!need_quotes && !(ft_strchr(value, '"') || ft_strchr(value, '\'')))
+				{
+					ft_strcat(expanded, "$");
+					ft_strcat(expanded, var_name);
+				}
+				else
 					ft_strcat(expanded, value);
 				//free(value);
 			}
@@ -140,6 +151,7 @@ char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
 			ft_strncat(expanded, &input[i], 1);
 			i++;
 		}
+		// fprintf(stderr, "expanded: %s\n", expanded);
 	}
 	return (expanded);
 }
