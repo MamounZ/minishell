@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/01 11:34:21 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/01 12:52:42 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ void fill_cmds_file(t_ms *ms)
             ssize_t read_len;
 
             // Read lines from stdin until the delimiter is encountered
-            // fprintf(stderr, "heredoc: %s\n", tmp->next->value);
+            fprintf(stderr, "heredoc: %s\n", tmp->next->value);
             while (1)
             {
                 printf("> ");
@@ -214,14 +214,14 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     t_token *tmp = tm;
     int i = 0;
     char *input = tokenize_to_char(tm);
-    char *expanded_input = expand_variables(NULL, input, ms, 0, 1);
+    char *expanded_input = expand_variables(NULL, input, ms, 0, -1);
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
     // print_tokens(tmp);
     t_token *tmp2 = tmp;
     free(input);
     free(expanded_input);
-    rm_quote(tmp);
+    // rm_quote(tmp);
     
     cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));
     while (tmp)
