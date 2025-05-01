@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/01 09:40:40 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/01 11:34:21 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,33 @@ int token_size(t_token *tmp)
     }
     return (size);
 }
+
+void rm_quote_c(char *str)
+{
+    int i = 0;
+    int j = 0;
+    char quote = 0;
+
+    while (str[i])
+    {
+        if ((str[i] == '\'' || str[i] == '\"') && !quote)
+        {
+            quote = str[i];
+            i++;
+        }
+        else if (str[i] == quote)
+        {
+            quote = 0;
+            i++;
+        }
+        else
+        {
+            str[j++] = str[i++];
+        }
+    }
+    str[j] = '\0';
+}
+
 void fill_cmds_file(t_ms *ms)
 {
     t_token *tmp = ms->tokens;
@@ -113,6 +140,7 @@ void fill_cmds_file(t_ms *ms)
         }
         else if (tmp->type == HEREDOC)
         {
+            rm_quote_c(tmp->next->value);
             int pipe_fd[2];
             if (pipe(pipe_fd) == -1)
             {
@@ -124,6 +152,7 @@ void fill_cmds_file(t_ms *ms)
             ssize_t read_len;
 
             // Read lines from stdin until the delimiter is encountered
+            // fprintf(stderr, "heredoc: %s\n", tmp->next->value);
             while (1)
             {
                 printf("> ");
@@ -188,16 +217,16 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     char *expanded_input = expand_variables(NULL, input, ms, 0, 1);
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
+    // print_tokens(tmp);
     t_token *tmp2 = tmp;
     free(input);
     free(expanded_input);
     rm_quote(tmp);
-    // print_tokens(tmp);
     
     cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));
     while (tmp)
     {
-        tmp->value = expand_variables(NULL, tmp->value, ms, 0, 0);
+        input = expand_variables(NULL, tmp->value, ms, 0, 0);
         if (tmp->type == REDIR_IN)
             cmd->args[i] = ft_strdup("<");
         else if (tmp->type == REDIR_OUT)
@@ -209,7 +238,8 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
         else if (tmp->type == PIPE)
             cmd->args[i] = ft_strdup("|");
         else
-            cmd->args[i] = ft_strdup(tmp->value);
+            cmd->args[i] = ft_strdup(input);
+        free(input);
         i++;
         tmp = tmp->next;
     }
@@ -227,7 +257,19 @@ void exec_cmd(t_ms *ms)
     int stdin_copy = dup(STDIN_FILENO);
     int stdout_copy = dup(STDOUT_FILENO);
 
-    if (!tmp->next&& (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
+    if (!tmp || !tmp->args || !tmp->args[0])
+    {
+        if (tmp && tmp->fd_in != -1)
+            close(tmp->fd_in);
+        if (tmp && tmp->fd_out != -1)
+            close(tmp->fd_out);
+        dup2(stdin_copy, STDIN_FILENO);
+        close(stdin_copy);
+        dup2(stdout_copy, STDOUT_FILENO);
+        close(stdout_copy);
+        return ;
+    }
+    if (!tmp->next && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
     !ft_strcmp(tmp->args[0], "unset")))
     {
         // print_args(tmp->args);

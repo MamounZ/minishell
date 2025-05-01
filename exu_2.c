@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 19:05:25 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/29 19:06:10 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/01 11:00:31 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,16 +24,15 @@ char *tokenize_to_char(t_token *tokens)
         tmp = tmp->next;
     }
     str = malloc(sizeof(char) * (len + 1));
-    if (!str)
-        return (NULL);
     str[0] = '\0';
     tmp = tokens;
     while (tmp)
     {
-        strcat(str, tmp->value);
-        strcat(str, " ");
+        ft_strcat(str, tmp->value);
+        ft_strcat(str, " ");
         tmp = tmp->next;
     }
-    str[len - 1] = '\0'; // remove last space
+    if (len > 0)
+        str[len - 1] = '\0'; // remove last space
     return (str);
 }

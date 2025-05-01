@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/04/29 20:01:13 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/01 10:44:59 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,7 @@ void execute_command(t_ms *ms)
                     break;
                 }
                 // Remove the trailing newline character
-                char *new = expand_variables(NULL, line, ms, 0);
+                char *new = line;//expand_variables(NULL, line, ms, 0, 0);
                 int si = ft_strlen(new);
                 if (new[si - 1] == '\n')
                     new[si - 1] = '\0';
