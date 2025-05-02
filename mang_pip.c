@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/01 22:19:18 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/02 11:44:20 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -321,25 +321,25 @@ void exec_cmd(t_ms *ms)
     {
         while (tmp)
         {
-            if (tmp->it_is_ok == 0)
-            {
-                if (tmp->fd_in != -1)
-                    close(tmp->fd_in);
-                if (tmp->fd_out != -1)
-                    close(tmp->fd_out);
-                if (prev_fd != -1)
-                    close(prev_fd);
-                prev_fd = -1;
-                tmp = tmp->next;
-                continue;
-            }
             if (tmp->next && pipe(fd) == -1)
             {
                 perror("pipe");
                 exit(1);
             }
             pid = fork();
-            if (pid == 0)
+            if (pid == 0 && tmp->it_is_ok == 0)
+            {
+                close(fd[0]);
+                close(fd[1]);
+                if (tmp->fd_in != -1)
+                    close(tmp->fd_in);
+                if (tmp->fd_out != -1)
+                    close(tmp->fd_out);
+                if (prev_fd != -1)
+                    close(prev_fd);
+                exit(1);
+            }
+            else if (pid == 0)
             {
                 if (tmp->fd_in != -1)
                 {
