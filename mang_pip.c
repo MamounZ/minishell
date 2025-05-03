@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/02 18:22:25 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/03 10:00:39 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,7 +219,7 @@ int there_are_a_douler(char *str)
 
     while (str[i])
     {
-        if (!the_quote && (str[i] == '\'' || str[i] == '\"'))
+        if (!the_quote && (str[i] == '\''))
             the_quote = str[i];
         else if (str[i] == '$' && !the_quote)
             return (1);
@@ -235,7 +235,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     t_token *tmp = tm;
     int i = 0;
     char *input = tokenize_to_char(tm);
-    char *expanded_input = expand_variables(NULL, input, ms, 0, -1);
+    char *expanded_input = expand_variables(NULL, input, ms, 0, 1);
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
     // print_tokens(tmp);
