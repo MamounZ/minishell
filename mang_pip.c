@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/04 19:47:26 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/04 21:56:00 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,10 +238,10 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     char *expanded_input = expand_variables(NULL, input, ms, 0);
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
-    // print_tokens(tmp);
     t_token *tmp2 = NULL;
     free(input);
     free(expanded_input);
+    // print_tokens(tmp);
     rm_quote(tmp);
 
     cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));

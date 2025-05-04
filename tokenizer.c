@@ -108,8 +108,9 @@ void rm_quote(t_token *ms)
                 if (is_quote(tmp->value[i]) && !in_quotes)
                 {
                     quote_char = tmp->value[i];
-                    in_quotes = !in_quotes;
+                    in_quotes = 1;
                     i++;
+                    continue;
                 }
                 else if (in_quotes && tmp->value[i] == quote_char)
                 {

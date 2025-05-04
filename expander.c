@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/04 19:47:12 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/04 21:53:11 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,9 +116,13 @@ char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
 						int z = 0;
 						while (value[z])
 						{
-							if (value[z] == '\"')
+							if (value[z] == '\"' && !in_double_quotes)
 							{
-								ft_strcat(expanded, "\"\"\"");
+								ft_strcat(expanded, "\'\"\'");
+							}
+							else if (value[z] == '"' && in_double_quotes)
+							{
+								ft_strcat(expanded, "\"\'\"\'\"");
 							}
 							else if (value[z] == '\'' && !in_double_quotes)
 							{
