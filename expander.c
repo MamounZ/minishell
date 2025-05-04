@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/03 10:20:50 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/04 19:47:12 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ char *ft_getenv(char *var, t_ms *ms)
 	return (NULL);
 }
 // handle echo "\$USER"
-char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status, int need_quotes)
+char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
 {
 	int i;
 	int j;
@@ -73,16 +73,14 @@ char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status,
 		if (input[i] == '\'' && !in_double_quotes)
 		{
 			in_single_quotes = !in_single_quotes;
-			if (need_quotes)
-				ft_strncat(expanded, &input[i], 1);
+			ft_strncat(expanded, &input[i], 1);
 			i++;
 			continue;
 		}
 		else if (input[i] == '\"' && !in_single_quotes)
 		{
 			in_double_quotes = !in_double_quotes;
-			if (need_quotes)
-				ft_strncat(expanded, &input[i], 1);
+			ft_strncat(expanded, &input[i], 1);
 			i++;
 			continue;
 		}
@@ -113,22 +111,25 @@ char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status,
 					var_name[j++] = input[i++];
 				var_name[j] = '\0';
 				value = ft_getenv(var_name, ms);
-				// fprintf(stderr, "var_name: %s\n", var_name);
-				// fprintf(stderr, "value: %s\n", value);
 				if (value)
 				{
-					if ((ft_strchr(value, '"') || ft_strchr(value, '\'')) && need_quotes)
-					{
-						ft_strcat(expanded, "$");
-						ft_strcat(expanded, var_name);
+						int z = 0;
+						while (value[z])
+						{
+							if (value[z] == '\"')
+							{
+								ft_strcat(expanded, "\"\"\"");
+							}
+							else if (value[z] == '\'' && !in_double_quotes)
+							{
+								ft_strcat(expanded, "\"\'\"");
+							}
+							else
+							{
+								ft_strncat(expanded, &value[z], 1);
+							}
+							z++;
 					}
-					else if (!need_quotes && !(ft_strchr(value, '"') || ft_strchr(value, '\'')))
-					{
-						ft_strcat(expanded, "$");
-						ft_strcat(expanded, var_name);
-					}
-					else
-						ft_strcat(expanded, value);
 				}
 				ft_memset(var_name, 0, sizeof(var_name));
 				//free(value);
