@@ -6,11 +6,30 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/04 21:56:00 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/08 10:59:13 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+void add_heredoc(t_heredoc **head, int fd)
+{
+    t_heredoc *new = malloc(sizeof(t_heredoc));
+    t_heredoc *tmp = *head;
+
+    new->fd = fd;
+    new->n = NULL;
+    if (!(*head))
+    {
+        *head = new;
+        return ;
+    }
+    while(tmp->n)
+    {
+        tmp = tmp->n;
+    }
+    tmp->n = new;
+}
 
 int num_of_words(t_token *tmp)
 {
@@ -94,11 +113,67 @@ void rm_quote_c(char *str)
     str[j] = '\0';
 }
 
+void fill_here_doc(t_ms *ms)
+{
+    ms->doc = NULL;
+    t_token *tmp = ms->tokens;
+
+    while (tmp)
+    {
+        if (tmp->type == HEREDOC)
+        {
+            rm_quote_c(tmp->next->value);
+            int pipe_fd[2];
+            if (pipe(pipe_fd) == -1)
+            {
+                perror("pipe");
+                break;
+            }
+            char *line = NULL;
+            size_t len = 0;
+            ssize_t read_len;
+
+            // Read lines from stdin until the delimiter is encountered
+            // fprintf(stderr, "heredoc: %s\n", tmp->next->value);
+            while (1)
+            {
+                printf("> ");
+                read_len = getline(&line, &len, stdin);
+                if (read_len == -1)
+                {
+                    perror("getline");
+                    free(line);
+                    close(pipe_fd[0]);
+                    close(pipe_fd[1]);
+                    break;
+                }
+                // Remove the trailing newline character
+                char *new = expand_variables(NULL, line, ms, 0);
+                int si = ft_strlen(new);
+                if (new[si - 1] == '\n')
+                    new[si - 1] = '\0';
+                line[read_len - 1] = '\0';
+                // fprintf(stderr, "new: %d\n", strcmp(line, tmp->next->value));
+                if (strcmp(line, tmp->next->value) == 0)
+                    break;
+                write(pipe_fd[1], new, ft_strlen(new));
+                write(pipe_fd[1], "\n", 1);
+            }
+            free(line);
+            close(pipe_fd[1]);
+            add_heredoc(&ms->doc, pipe_fd[0]);
+        }
+        tmp = tmp->next;
+    }
+}
+
 void fill_cmds_file(t_ms *ms)
 {
+    fill_here_doc(ms);
     t_token *tmp = ms->tokens;
     t_cmd *cmd = create_cmd(tmp);
     t_token *tm = NULL;
+    t_heredoc *t = ms->doc;
 
     while (tmp)
     {
@@ -141,48 +216,8 @@ void fill_cmds_file(t_ms *ms)
         }
         else if (tmp->type == HEREDOC)
         {
-            rm_quote_c(tmp->next->value);
-            int pipe_fd[2];
-            if (pipe(pipe_fd) == -1)
-            {
-                perror("pipe");
-                break;
-            }
-            char *line = NULL;
-            size_t len = 0;
-            ssize_t read_len;
-
-            // Read lines from stdin until the delimiter is encountered
-            // fprintf(stderr, "heredoc: %s\n", tmp->next->value);
-            while (1)
-            {
-                printf("> ");
-                read_len = getline(&line, &len, stdin);
-                if (read_len == -1)
-                {
-                    perror("getline");
-                    free(line);
-                    close(pipe_fd[0]);
-                    close(pipe_fd[1]);
-                    break;
-                }
-                // Remove the trailing newline character
-                char *new = expand_variables(NULL, line, ms, 0);
-                int si = ft_strlen(new);
-                if (new[si - 1] == '\n')
-                    new[si - 1] = '\0';
-                line[read_len - 1] = '\0';
-                // fprintf(stderr, "new: %d\n", strcmp(line, tmp->next->value));
-                if (strcmp(line, tmp->next->value) == 0)
-                    break;
-                write(pipe_fd[1], new, ft_strlen(new));
-                write(pipe_fd[1], "\n", 1);
-            }
-            free(line);
-            close(pipe_fd[1]);
-            if (cmd->fd_in != -1)
-                close(cmd->fd_in);
-            cmd->fd_in = pipe_fd[0];
+            cmd->fd_in = t->fd;
+            t = t->n;
             tmp = tmp->next;
         }
         else if (tmp->type != PIPE)

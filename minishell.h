@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/04 18:08:56 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/08 10:42:39 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,13 @@ typedef struct s_token {
     struct s_token *next;
 } t_token;
 
+typedef struct s_heredoc
+{
+    int fd;
+    struct s_heredoc *n; 
+} t_heredoc;
+
+
 typedef struct s_cmd {
     char **args;
     char *path;
@@ -50,6 +57,7 @@ typedef struct s_ms
     char    **new_env;
     t_token *tokens;
     t_cmd   *cmds;
+    t_heredoc *doc;
     char    **argv;
 }		t_ms;
 
