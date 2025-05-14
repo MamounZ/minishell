@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/14 09:30:28 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/14 16:13:38 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,18 @@ int token_size(t_token *tmp)
         tmp = tmp->next;
     }
     return (size);
+}
+
+void free_doc(t_heredoc *ms)
+{
+    t_heredoc *tmp;
+    while (ms)
+    {
+        tmp = ms;
+        ms = ms->n;
+        close(tmp->fd);
+        free(tmp);
+    }
 }
 
 void rm_quote_c(char *str)
@@ -307,6 +319,7 @@ void fill_cmds_file(t_ms *ms)
         }
         tmp = tmp->next;
     }
+    free_doc(ms->doc);
 }
 
 void print_args(char **args) {
@@ -339,13 +352,13 @@ int there_are_a_douler(char *str)
 
 void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
 {
-    t_token *tmp = tm;
+    t_token *tmp, *tmo;
     int i = 0;
     char *input = tokenize_to_char(tm);
     char *expanded_input = expand_variables(NULL, input, ms);
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
-    t_token *tmp2 = NULL;
+    tmo = tmp;
     free(input);
     free(expanded_input);
     // print_tokens(tmp);
@@ -370,8 +383,8 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
         i++;
         tmp = tmp->next;
     }
-    free_tokens(tmp2);
     cmd->args[i] = NULL;
+    free_tokens(tmo);
 }
 
 void exec_cmd(t_ms *ms)
@@ -419,6 +432,12 @@ void exec_cmd(t_ms *ms)
                     close(tmp->fd_out);
                 if (prev_fd != -1)
                     close(prev_fd);
+                free_cmds(ms->cmds);
+                free_args(ms->envp_cpy);
+	            free_tokens(ms->tokens);
+    	        free(ms);
+                close(stdin_copy);
+                close(stdout_copy);
                 exit(1);
             }
             else if (pid == 0)
@@ -447,6 +466,22 @@ void exec_cmd(t_ms *ms)
                 if (is_builtin(tmp->args[0]))
                 {
                     execute_builtin(tmp->args, ms);
+                    close(fd[0]);
+                    close(fd[1]);
+                    if (tmp->fd_in != -1)
+                        close(tmp->fd_in);
+                    if (tmp->fd_out != -1)
+                        close(tmp->fd_out);
+                    if (prev_fd != -1)
+                        close(prev_fd);
+                    free_cmds(ms->cmds);
+                    free_args(ms->envp_cpy);
+	                free_tokens(ms->tokens);
+    	            free(ms);
+                    close(stdin_copy);
+                    close(stdout_copy);
+                    exit(1);
+                    exit(0);
                 }
                 else 
                 {               
@@ -454,13 +489,23 @@ void exec_cmd(t_ms *ms)
                         cmd = ft_strdup(tmp->args[0]);
                     else
                         cmd = get_cmd_path(tmp->args[0], ms);
-                    // print_args(tmp->args);
-                    // printf("\n\n\n\n\n");
-                    execve(cmd, tmp->args, ms->envp_cpy);
+                    if (cmd)
+                        execve(cmd, tmp->args, ms->envp_cpy);
                     perror("execve");
-                    free(cmd);
+                    if (tmp->fd_in != -1)
+                        close(tmp->fd_in);
+                    if (tmp->fd_out != -1)
+                        close(tmp->fd_out);
+                    if (prev_fd != -1)
+                        close(prev_fd);
+                    free_cmds(ms->cmds);
+                	free_args(ms->envp_cpy);
+	                free_tokens(ms->tokens);
+    	            free(ms);
+                    close(stdin_copy);
+                    close(stdout_copy);
+                    exit(127);
                 }
-                exit(1);
             }
             else
             {
@@ -481,7 +526,6 @@ void exec_cmd(t_ms *ms)
     }
     int	wstatus;
 	int	last_pid;
-
 	last_pid = wait(&wstatus);
 	while (last_pid > 0)
 	{
