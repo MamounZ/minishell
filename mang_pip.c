@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/08 10:59:13 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/14 09:30:28 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,74 @@ void rm_quote_c(char *str)
     str[j] = '\0';
 }
 
+char	*expand_heredoc(char **argv, char *input, t_ms *ms)
+{
+	int i;
+	int j;
+	char *expanded;
+	char var_name[256];
+	char *exit_status;
+	char *value;
+
+	expanded = malloc(10000);
+	if (!expanded)
+		return NULL;
+	expanded[0] = '\0';
+	i = 0;
+	while (input[i])
+	{
+		if (input[i] == '$' && input[i + 1])
+		{
+			i++;
+			if (input[i] == '0')
+			{
+				ft_strcat(expanded, argv[0]);
+				i++;
+			}
+			else if (input[i] >= '1' && input[i] <= '9')
+			{
+				ft_strcat(expanded, "");
+				i++;
+			}
+			else if (input[i] == '?')
+			{
+				exit_status = ft_itoa(ms->last_exit_status);
+				ft_strcat(expanded, exit_status);
+				free(exit_status);
+				i++;
+			}
+			else if (is_valid_var_char(input[i]))
+			{
+				j = 0;
+				while (is_valid_var_char(input[i]))
+					var_name[j++] = input[i++];
+				var_name[j] = '\0';
+				value = ft_getenv(var_name, ms);
+				if (value)
+				{
+					ft_strncat(expanded, &value[0], ft_strlen(value));
+				}
+				ft_memset(var_name, 0, sizeof(var_name));
+				//free(value);
+			}
+			else
+			{
+				// If "$" is alone in quotes, preserve it (echo "$")
+                ft_strncat(expanded, "$", 1);
+				ft_strncat(expanded, &input[i], 1);
+                i++;
+			}
+		}
+		else
+		{
+			ft_strncat(expanded, &input[i], 1);
+			i++;
+		}
+		// fprintf(stderr, "expanded: %s\n", expanded);
+	}
+	return (expanded);
+}
+
 void fill_here_doc(t_ms *ms)
 {
     ms->doc = NULL;
@@ -122,7 +190,12 @@ void fill_here_doc(t_ms *ms)
     {
         if (tmp->type == HEREDOC)
         {
-            rm_quote_c(tmp->next->value);
+            int expand = 1;
+            if (tmp->next->value[0] == '"' || tmp->next->value[0] == '\'')
+            {
+                rm_quote_c(tmp->next->value);
+                expand = 0;
+            }
             int pipe_fd[2];
             if (pipe(pipe_fd) == -1)
             {
@@ -132,9 +205,6 @@ void fill_here_doc(t_ms *ms)
             char *line = NULL;
             size_t len = 0;
             ssize_t read_len;
-
-            // Read lines from stdin until the delimiter is encountered
-            // fprintf(stderr, "heredoc: %s\n", tmp->next->value);
             while (1)
             {
                 printf("> ");
@@ -147,13 +217,15 @@ void fill_here_doc(t_ms *ms)
                     close(pipe_fd[1]);
                     break;
                 }
-                // Remove the trailing newline character
-                char *new = expand_variables(NULL, line, ms, 0);
+                char *new;
+                if (expand)
+                    new = expand_heredoc(NULL, line, ms);
+                else
+                    new = ft_strdup(line);
                 int si = ft_strlen(new);
                 if (new[si - 1] == '\n')
                     new[si - 1] = '\0';
                 line[read_len - 1] = '\0';
-                // fprintf(stderr, "new: %d\n", strcmp(line, tmp->next->value));
                 if (strcmp(line, tmp->next->value) == 0)
                     break;
                 write(pipe_fd[1], new, ft_strlen(new));
@@ -270,7 +342,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     t_token *tmp = tm;
     int i = 0;
     char *input = tokenize_to_char(tm);
-    char *expanded_input = expand_variables(NULL, input, ms, 0);
+    char *expanded_input = expand_variables(NULL, input, ms);
     // fprintf(stderr, "expanded_input: %s\n", expanded_input);
     tmp = tokenize(expanded_input);
     t_token *tmp2 = NULL;
@@ -407,9 +479,21 @@ void exec_cmd(t_ms *ms)
             tmp = tmp->next;
         }
     }
-    int status;
-    while ((wait(&status)) > 0) {
-    }
+    int	wstatus;
+	int	last_pid;
+
+	last_pid = wait(&wstatus);
+	while (last_pid > 0)
+	{
+		if (last_pid == pid)
+		{
+			if (WIFEXITED(wstatus))
+				ms->last_exit_status = WEXITSTATUS(wstatus);
+			else if (WIFSIGNALED(wstatus))
+				ms->last_exit_status = 128 + WTERMSIG(wstatus);
+		}
+		last_pid = wait(&wstatus);
+	}
     dup2(stdin_copy, STDIN_FILENO);
     close(stdin_copy);
     dup2(stdout_copy, STDOUT_FILENO);

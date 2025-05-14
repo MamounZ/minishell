@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/04 21:53:11 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/13 19:31:19 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ char *ft_getenv(char *var, t_ms *ms)
 	return (NULL);
 }
 // handle echo "\$USER"
-char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
+char	*expand_variables(char **argv, char *input, t_ms *ms)
 {
 	int i;
 	int j;
@@ -99,7 +99,7 @@ char	*expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status)
 			}
 			else if (input[i] == '?')
 			{
-				exit_status = ft_itoa(last_exit_status);
+				exit_status = ft_itoa(ms->last_exit_status);
 				ft_strcat(expanded, exit_status);
 				free(exit_status);
 				i++;
