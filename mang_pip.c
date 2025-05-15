@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/15 22:23:15 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/15 22:44:12 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -412,8 +412,11 @@ void exec_cmd(t_ms *ms)
             pid = fork();
             if (pid == 0 && tmp->it_is_ok == 0)
             {
-                close(fd[0]);
-                close(fd[1]);
+                if (tmp->next)
+                {
+                    close(fd[0]);
+                    close(fd[1]);
+                }
                 if (tmp->fd_in != -1)
                     close(tmp->fd_in);
                 if (tmp->fd_out != -1)
@@ -453,6 +456,18 @@ void exec_cmd(t_ms *ms)
                 }
                 if (!tmp || !tmp->args || !tmp->args[0])
                 {
+                    if (tmp->fd_in != -1)
+                        close(tmp->fd_in);
+                    if (tmp->fd_out != -1)
+                        close(tmp->fd_out);
+                    if (prev_fd != -1)
+                        close(prev_fd);
+                    free_cmds(ms->cmds);
+                    free_args(ms->envp_cpy);
+	                free_tokens(ms->tokens);
+    	            free(ms);
+                    close(stdin_copy);
+                    close(stdout_copy);
                     exit(1);
                 }
                 else if (is_builtin(tmp->args[0]))
