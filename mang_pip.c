@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/14 16:13:38 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/15 22:23:15 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -397,19 +397,7 @@ void exec_cmd(t_ms *ms)
     int stdin_copy = dup(STDIN_FILENO);
     int stdout_copy = dup(STDOUT_FILENO);
 
-    if (!tmp || !tmp->args || !tmp->args[0])
-    {
-        if (tmp && tmp->fd_in != -1)
-            close(tmp->fd_in);
-        if (tmp && tmp->fd_out != -1)
-            close(tmp->fd_out);
-        dup2(stdin_copy, STDIN_FILENO);
-        close(stdin_copy);
-        dup2(stdout_copy, STDOUT_FILENO);
-        close(stdout_copy);
-        return ;
-    }
-    if (!tmp->next && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
+    if (!tmp->next && !tmp && !tmp->args && !tmp->args[0] && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
     !ft_strcmp(tmp->args[0], "unset")) && tmp->it_is_ok)
         execute_builtin(tmp->args, ms);
     else
@@ -463,11 +451,13 @@ void exec_cmd(t_ms *ms)
                     dup2(fd[1], STDOUT_FILENO);
                     close(fd[1]);
                 }
-                if (is_builtin(tmp->args[0]))
+                if (!tmp || !tmp->args || !tmp->args[0])
+                {
+                    exit(1);
+                }
+                else if (is_builtin(tmp->args[0]))
                 {
                     execute_builtin(tmp->args, ms);
-                    close(fd[0]);
-                    close(fd[1]);
                     if (tmp->fd_in != -1)
                         close(tmp->fd_in);
                     if (tmp->fd_out != -1)
@@ -480,7 +470,6 @@ void exec_cmd(t_ms *ms)
     	            free(ms);
                     close(stdin_copy);
                     close(stdout_copy);
-                    exit(1);
                     exit(0);
                 }
                 else 
