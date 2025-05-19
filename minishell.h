@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/13 21:54:40 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/19 13:25:47 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include "libft/includes/ft_printf.h"
 #include <sys/wait.h>
 
+extern int g_signal;
 
 typedef enum e_token_type {
     WORD, PIPE, REDIR_IN, REDIR_OUT, HEREDOC, APPEND

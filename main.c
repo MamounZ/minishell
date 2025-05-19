@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/14 16:03:05 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/19 13:29:43 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,11 @@ int main(int argc, char **argv, char **envp)
 		{
 			free(input);
 			continue;
+		}
+		if (g_signal)
+		{
+			ms->last_exit_status = 130;
+			g_signal = 0;
 		}
 		ms->tokens = tokenize(input);
 		free(input);
