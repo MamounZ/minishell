@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/20 19:06:39 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/20 19:49:41 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,12 +141,15 @@ int main(int argc, char **argv, char **envp)
 		exec_cmd(ms);
 		free_tokens(ms->tokens);
 		free_cmds(ms->cmds);
+		free_doc(ms->doc);
 		ms->tokens = NULL;
 		ms->cmds = NULL;
+		ms->doc = NULL;
 	}
 	free_cmds(ms->cmds);
 	free_args(ms->envp_cpy);
 	free_tokens(ms->tokens);
+	free_doc(ms->doc);
 	free(ms);
 	free(input);
 	return (0);

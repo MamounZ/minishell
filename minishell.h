@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/19 21:39:36 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/20 19:22:06 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ typedef struct s_ms
     int     last_exit_status;
 }		t_ms;
 
+void free_doc(t_heredoc *doc);
 void copy_env(char **envp, t_ms *ms);
 void ft_exit(char **args, t_ms *ms);
 void print_args(char **args);

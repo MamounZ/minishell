@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/20 19:03:56 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/20 19:49:28 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -239,9 +239,13 @@ void fill_here_doc(t_ms *ms)
                     new[si - 1] = '\0';
                 line[read_len - 1] = '\0';
                 if (strcmp(line, tmp->next->value) == 0)
+                {
+                    free(new);
                     break;
+                }
                 write(pipe_fd[1], new, ft_strlen(new));
                 write(pipe_fd[1], "\n", 1);
+                free(new);
             }
             free(line);
             close(pipe_fd[1]);
@@ -319,7 +323,6 @@ void fill_cmds_file(t_ms *ms)
         }
         tmp = tmp->next;
     }
-    // free_doc(ms->doc);
 }
 
 void print_args(char **args) {
@@ -426,6 +429,7 @@ void exec_cmd(t_ms *ms)
                 free_cmds(ms->cmds);
                 free_args(ms->envp_cpy);
 	            free_tokens(ms->tokens);
+                free_doc(ms->doc);
     	        free(ms);
                 close(stdin_copy);
                 close(stdout_copy);
@@ -465,6 +469,7 @@ void exec_cmd(t_ms *ms)
                     free_cmds(ms->cmds);
                     free_args(ms->envp_cpy);
 	                free_tokens(ms->tokens);
+                    free_doc(ms->doc);
     	            free(ms);
                     close(stdin_copy);
                     close(stdout_copy);
@@ -483,6 +488,7 @@ void exec_cmd(t_ms *ms)
                     free_cmds(ms->cmds);
                     free_args(ms->envp_cpy);
 	                free_tokens(ms->tokens);
+                    free_doc(ms->doc);
                     e = ms->last_exit_status;
     	            free(ms);
                     close(stdin_copy);
@@ -507,6 +513,7 @@ void exec_cmd(t_ms *ms)
                     free_cmds(ms->cmds);
                 	free_args(ms->envp_cpy);
 	                free_tokens(ms->tokens);
+                    free_doc(ms->doc);
     	            free(ms);
                     close(stdin_copy);
                     close(stdout_copy);
