@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 22:05:32 by mazaid            #+#    #+#             */
-/*   Updated: 2025/04/01 12:43:00 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/19 22:16:34 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ int is_builtin(char *cmd)
 
 void execute_builtin(char **args, t_ms *ms)
 {
+	ms->last_exit_status = 0;
 	if (!args || !args[0])
 		return ;
 	if (ft_strcmp(args[0], "echo") == 0)
@@ -77,6 +78,6 @@ void execute_builtin(char **args, t_ms *ms)
 		ft_unset(args, ms);
 	else if (ft_strcmp(args[0], "env") == 0)
 		ft_env(ms);
-	// else if (ft_strcmp(args[0], "exit") == 0)
-	// 	ft_exit(args, ms);
+	else if (ft_strcmp(args[0], "exit") == 0)
+		ft_exit(args, ms);
 }

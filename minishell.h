@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/19 13:25:47 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/19 21:39:36 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,8 @@ typedef struct s_ms
 }		t_ms;
 
 void copy_env(char **envp, t_ms *ms);
+void ft_exit(char **args, t_ms *ms);
+void print_args(char **args);
 char *expand_variables(char **argv, char *input, t_ms *ms);
 void execute_builtin(char **args, t_ms *ms);
 int is_builtin(char *cmd);

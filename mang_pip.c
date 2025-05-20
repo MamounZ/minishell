@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/15 22:44:12 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/20 19:03:56 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ void free_doc(t_heredoc *ms)
     {
         tmp = ms;
         ms = ms->n;
-        close(tmp->fd);
+        // close(tmp->fd);
         free(tmp);
     }
 }
@@ -319,7 +319,7 @@ void fill_cmds_file(t_ms *ms)
         }
         tmp = tmp->next;
     }
-    free_doc(ms->doc);
+    // free_doc(ms->doc);
 }
 
 void print_args(char **args) {
@@ -397,8 +397,8 @@ void exec_cmd(t_ms *ms)
     int stdin_copy = dup(STDIN_FILENO);
     int stdout_copy = dup(STDOUT_FILENO);
 
-    if (!tmp->next && !tmp && !tmp->args && !tmp->args[0] && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
-    !ft_strcmp(tmp->args[0], "unset")) && tmp->it_is_ok)
+    if (tmp && !tmp->next && tmp->args && tmp->args[0] && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
+    !ft_strcmp(tmp->args[0], "unset") || !ft_strcmp(tmp->args[0], "exit")) && tmp->it_is_ok)
         execute_builtin(tmp->args, ms);
     else
     {
@@ -472,6 +472,7 @@ void exec_cmd(t_ms *ms)
                 }
                 else if (is_builtin(tmp->args[0]))
                 {
+                    int e;
                     execute_builtin(tmp->args, ms);
                     if (tmp->fd_in != -1)
                         close(tmp->fd_in);
@@ -482,10 +483,11 @@ void exec_cmd(t_ms *ms)
                     free_cmds(ms->cmds);
                     free_args(ms->envp_cpy);
 	                free_tokens(ms->tokens);
+                    e = ms->last_exit_status;
     	            free(ms);
                     close(stdin_copy);
                     close(stdout_copy);
-                    exit(0);
+                    exit(e);
                 }
                 else 
                 {               

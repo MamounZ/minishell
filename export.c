@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 00:42:24 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/18 23:33:53 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/05/19 22:18:44 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,7 +235,10 @@ void ft_export(char **args, t_ms *ms)
 			if (is_valid_identifier(var))
 				update_env(ms, var, value);
 			else
+			{
+				ms->last_exit_status = 1;
 				printf("minishell: export: `%s': not a valid identifier\n", args[i]);
+			}
 
 			free(var);
 			free(value);
@@ -243,7 +246,10 @@ void ft_export(char **args, t_ms *ms)
 		else // Case: Only VAR (no = sign)
 		{
 			if (!is_valid_identifier(args[i])) // Invalid identifier
+			{
+				ms->last_exit_status = 1;
 				printf("minishell: export: `%s': not a valid identifier\n", args[i]);
+			}
 			// If valid, do nothing (as per your method)
 		}
 		i++;

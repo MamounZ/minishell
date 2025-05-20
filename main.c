@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/19 13:29:43 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/20 19:06:39 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,16 @@ void free_args(char **args)
 	free(args);
 }
 
+void print_hredoc(t_heredoc *doc)
+{
+	t_heredoc *tmp = doc;
+	while (tmp)
+	{
+		printf("fd: %d\n", tmp->fd);
+		tmp = tmp->n;
+	}
+}
+
 int main(int argc, char **argv, char **envp)
 {
 	char	*input;
@@ -97,7 +107,7 @@ int main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		input = readline("minishell> ");
-		if (!input || ft_strcmp(input, "exit") == 0)
+		if (!input)
 		{
 			printf("exit\n");
 			break;
