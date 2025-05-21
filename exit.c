@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 14:54:36 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/19 22:21:24 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/21 08:23:40 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,10 +75,6 @@ int valid_atoll(char *str)
 
 void	ft_exit(char **args, t_ms *ms)
 {
-    // free_cmds(ms->cmds);
-	// free_args(ms->envp_cpy);
-	// free_tokens(ms->tokens);
-	// free(ms);
     (void)ms;
     if (args[1] == NULL)
         exit(0);

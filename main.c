@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/20 19:49:41 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/21 14:53:48 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int check_quotes(char *input)
 	}
 	return (0);
 }
-// Convert token list into an array of arguments
+
 char **tokens_to_args(t_token *tokens)
 {
 	int count;
@@ -70,6 +70,9 @@ char **tokens_to_args(t_token *tokens)
 void free_args(char **args)
 {
 	int i = 0;
+
+	if (!args)
+		return;
 	while (args[i])
 		free(args[i++]);
 	free(args);
@@ -85,72 +88,86 @@ void print_hredoc(t_heredoc *doc)
 	}
 }
 
-int main(int argc, char **argv, char **envp)
+void ft_free_ms(t_ms *ms, int last)
 {
-	char	*input;
-	t_ms	*ms;
+	free_tokens(ms->tokens);
+	ms->tokens = NULL;
+	free_cmds(ms->cmds);
+	ms->cmds = NULL;
+	free_doc(ms->doc);
+	ms->doc = NULL;
+	if (last)
+	{
+		free_args(ms->envp_cpy);
+		ms->envp_cpy = NULL;
+		free_args(ms->new_env);
+		ms->new_env = NULL;
+		free(ms);
+	}
+}
 
-	(void) argv;
-	(void) argc;
-	ms = malloc(sizeof(t_ms));
-	if (!ms)
-		return (0);
+void init_ms(t_ms *ms, char **argv, char **envp)
+{
 	ms->envp_cpy = NULL;
 	ms->new_env = NULL;
 	ms->tokens = NULL;
 	ms->cmds = NULL;
 	ms->doc = NULL;
-	ms->last_exit_status = 0;
 	copy_env(envp, ms);
 	setup_signals();
 	ms->argv = argv;
-	while (1)
+	ms->last_exit_status = 0;
+}
+
+int minshell_loop(t_ms *ms)
+{
+	char *input;
+
+	input = readline("minishell> ");
+	if (!input)
 	{
-		input = readline("minishell> ");
-		if (!input)
-		{
-			printf("exit\n");
-			break;
-		}
-		if (*input)
+		printf("exit\n");
+		return (0);
+	}
+	if (*input)
 		add_history(input);
-		if (check_quotes(input))
-		{
-			free(input);
-			continue;
-		}
-		if (ft_strlen(input) == 0)
-		{
-			free(input);
-			continue;
-		}
-		if (g_signal)
-		{
-			ms->last_exit_status = 130;
-			g_signal = 0;
-		}
-		ms->tokens = tokenize(input);
+	if (check_quotes(input) || ft_strlen(input) == 0)
+	{
 		free(input);
-		input = NULL;
+		return (1);
+	}
+	if (g_signal)
+	{
+		ms->last_exit_status = 130;
+		g_signal = 0;
+	}
+	ms->tokens = tokenize(input);
+	free(input);
+	input = NULL;
+	return (1);
+}
+
+int main(int argc, char **argv, char **envp)
+{
+	t_ms	*ms;
+	int exit_status;
+
+	exit_status = 0;
+	(void) argv;
+	(void) argc;
+	ms = malloc(sizeof(t_ms));
+	if (!ms)
+		return (0);
+	init_ms(ms, argv, envp);
+	while (minshell_loop(ms))
+	{
 		if (check_token(ms))
-		{
-			free(input);
-			continue;
-		}
+			return (1);
 		fill_cmds_file(ms);
 		exec_cmd(ms);
-		free_tokens(ms->tokens);
-		free_cmds(ms->cmds);
-		free_doc(ms->doc);
-		ms->tokens = NULL;
-		ms->cmds = NULL;
-		ms->doc = NULL;
+		ft_free_ms(ms, 0);
 	}
-	free_cmds(ms->cmds);
-	free_args(ms->envp_cpy);
-	free_tokens(ms->tokens);
-	free_doc(ms->doc);
-	free(ms);
-	free(input);
-	return (0);
+	exit_status = ms->last_exit_status;
+	ft_free_ms(ms, 1);
+	return (exit_status);
 }

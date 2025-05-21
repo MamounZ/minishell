@@ -27,8 +27,6 @@ t_token_type get_token_type(char *value)
     return WORD;
 }
 
-
-// Tokenize the input string
 t_token *tokenize(char *input)
 {
     t_token *tokens;
@@ -94,25 +92,28 @@ void print_tokens(t_token *tokens) {
 
 void rm_quote(t_token *ms)
 {
-    t_token *tmp = ms;
-    int in_quotes = 0;
-    char quote_char;
+    t_token *tmp;
+    int in_quotes;
+    int i;
+    int j;
+
+    tmp = ms;
+    in_quotes = 0;
     while (tmp)
     {
-        int j = 0;
-        int i = 0;
+        i = 0;
+        j = 0;
         if (tmp->type == WORD)
         {
             while (tmp->value[i])
             {
                 if (is_quote(tmp->value[i]) && !in_quotes)
                 {
-                    quote_char = tmp->value[i];
-                    in_quotes = 1;
+                    in_quotes = tmp->value[i];
                     i++;
                     continue;
                 }
-                else if (in_quotes && tmp->value[i] == quote_char)
+                else if (in_quotes && tmp->value[i] == in_quotes)
                 {
                     i++;
                     in_quotes = 0;
