@@ -27,13 +27,40 @@ t_token_type get_token_type(char *value)
     return WORD;
 }
 
+void word_token(char **input, t_token_type *type)
+{
+    char quote_char;
+
+    if (is_quote(**input))
+    {
+        quote_char = *(*input)++;
+        while (**input && **input != quote_char)
+            (*input)++;
+        if (**input == quote_char)
+            (*input)++;
+    }
+    while (**input && !is_operator(*input) && !ft_isspace(**input))
+    {
+        if (is_quote(**input))
+        {
+            quote_char = *(*input)++;
+            while (**input && **input != quote_char)
+                (*input)++;
+            if (**input == quote_char)
+                (*input)++;
+            continue;
+        }
+        (*input)++;
+    }
+    *type = WORD;
+}
+
 t_token *tokenize(char *input)
 {
     t_token *tokens;
     char *token;
     int operator_len;
     t_token_type type;
-    char quote_char;
 
     tokens = NULL;
     while (*input)
@@ -47,36 +74,10 @@ t_token *tokenize(char *input)
         if (operator_len)
         {
             input += operator_len;
-            char *op = ft_substr(token, 0, operator_len);
-            type = get_token_type(op);
-            free(op);
+            type = get_token_type(ft_substr(token, 0, operator_len));
         }
         else
-        {
-            if (is_quote(*input))
-            {
-                quote_char = *input++;
-                while (*input && *input != quote_char)
-                    input++;
-                if (*input == quote_char)
-                    input++;
-                type = WORD;
-            }
-            while (*input && !is_operator(input) && !ft_isspace(*input))
-            {
-                if (is_quote(*input))
-                {
-                    quote_char = *input++;
-                    while (*input && *input != quote_char)
-                        input++;
-                    if (*input == quote_char)
-                        input++;
-                    continue;
-                }
-                input++;
-            }
-            type = WORD;
-        }
+            word_token(&input, &type);
         add_token(&tokens, new_token(ft_substr(token, 0, input - token), type));
     }
     return tokens;
