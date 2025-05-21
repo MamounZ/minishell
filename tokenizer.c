@@ -101,27 +101,18 @@ void rm_quote(t_token *ms)
     in_quotes = 0;
     while (tmp)
     {
-        i = 0;
+        i = -1;
         j = 0;
         if (tmp->type == WORD)
-        {
-            while (tmp->value[i])
+            while (tmp->value[++i])
             {
                 if (is_quote(tmp->value[i]) && !in_quotes)
-                {
                     in_quotes = tmp->value[i];
-                    i++;
-                    continue;
-                }
                 else if (in_quotes && tmp->value[i] == in_quotes)
-                {
-                    i++;
                     in_quotes = 0;
-                    continue;
-                }
-                tmp->value[j++] = tmp->value[i++];
+                else 
+                    tmp->value[j++] = tmp->value[i];
             }
-        }
         tmp->value[j] = '\0';
         tmp = tmp->next;
     }
