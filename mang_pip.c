@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/20 19:49:28 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/21 20:33:32 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,33 +195,31 @@ char	*expand_heredoc(char **argv, char *input, t_ms *ms)
 
 void fill_here_doc(t_ms *ms)
 {
-    ms->doc = NULL;
-    t_token *tmp = ms->tokens;
-
+    t_token *tmp;
+    int expand;
+    int pipe_fd[2];
+    
+    tmp = ms->tokens;
+    expand = 1;
     while (tmp)
     {
         if (tmp->type == HEREDOC)
         {
-            int expand = 1;
             if (tmp->next->value[0] == '"' || tmp->next->value[0] == '\'')
             {
                 rm_quote_c(tmp->next->value);
                 expand = 0;
             }
-            int pipe_fd[2];
             if (pipe(pipe_fd) == -1)
             {
                 perror("pipe");
                 break;
             }
-            char *line = NULL;
-            size_t len = 0;
-            ssize_t read_len;
+            char *line;
             while (1)
             {
-                printf("> ");
-                read_len = getline(&line, &len, stdin);
-                if (read_len == -1)
+                line = readline("> ");
+                if (!line)
                 {
                     perror("getline");
                     free(line);
@@ -234,10 +232,6 @@ void fill_here_doc(t_ms *ms)
                     new = expand_heredoc(NULL, line, ms);
                 else
                     new = ft_strdup(line);
-                int si = ft_strlen(new);
-                if (new[si - 1] == '\n')
-                    new[si - 1] = '\0';
-                line[read_len - 1] = '\0';
                 if (strcmp(line, tmp->next->value) == 0)
                 {
                     free(new);
