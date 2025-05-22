@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/22 10:20:51 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/22 18:50:03 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,6 +241,68 @@ void fill_here_doc(t_ms *ms)
     }
 }
 
+void open_readout(t_token *tmp, t_cmd *cmd)
+{
+    if (cmd->fd_out != -1)
+        close(cmd->fd_out);
+    cmd->fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (cmd->fd_out == -1)
+    {
+        perror("open");
+        cmd->it_is_ok = 0;
+    }
+}
+
+void open_readin(t_token *tmp, t_cmd *cmd)
+{
+    if (cmd->fd_in != -1)
+        close(cmd->fd_in);
+    cmd->fd_in = open(tmp->next->value, O_RDONLY);
+    if (cmd->fd_in == -1)
+    {
+        perror("open");
+        cmd->it_is_ok = 0;
+    }
+}
+
+void open_append(t_token *tmp, t_cmd *cmd)
+{
+    if (cmd->fd_out != -1)
+        close(cmd->fd_out);
+    cmd->fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (cmd->fd_out == -1)
+    {
+        perror("open");
+        cmd->it_is_ok = 0;
+    }
+}
+
+int next_cmd(t_token **tm, t_cmd **cmd, t_ms *ms, t_token *tmp)
+{
+    add_cmd(ms, *cmd);
+    fill_cmds(*cmd, *tm, ms);
+    free_tokens(*tm);
+    *tm = NULL;
+    if (tmp->type == PIPE)
+        *cmd = create_cmd(tmp->next);
+    return (1);
+}
+
+void find_in_or_out(t_token *tmp, t_cmd *cmd, t_heredoc **t)
+{
+    if (tmp->type == REDIR_OUT && cmd->it_is_ok)
+        open_readout(tmp, cmd);
+    else if (tmp->type == REDIR_IN && cmd->it_is_ok)
+        open_readin(tmp, cmd);
+    else if (tmp->type == APPEND && cmd->it_is_ok)
+        open_append(tmp, cmd);
+    else if (tmp->type == HEREDOC)
+    {
+        cmd->fd_in = (*t)->fd;
+        *t = (*t)->n;
+    }
+}
+
 void fill_cmds_file(t_ms *ms)
 {
     t_token *tmp;
@@ -255,60 +317,15 @@ void fill_cmds_file(t_ms *ms)
     cmd = create_cmd(tmp);
     while (tmp)
     {
-        if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND)
+        if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND || tmp->type == HEREDOC)
         {
-            if (tmp->type == REDIR_OUT && cmd->it_is_ok)
-            {
-                if (cmd->fd_out != -1)
-                    close(cmd->fd_out);
-                cmd->fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-                if (cmd->fd_out == -1)
-                {
-                    perror("open");
-                    cmd->it_is_ok = 0;
-                }
-            }
-            else if (tmp->type == REDIR_IN && cmd->it_is_ok)
-            {
-                if (cmd->fd_in != -1)
-                    close(cmd->fd_in);
-                cmd->fd_in = open(tmp->next->value, O_RDONLY);
-                if (cmd->fd_in == -1)
-                {
-                    perror("open");
-                    cmd->it_is_ok = 0;
-                }
-            }
-            else if (tmp->type == APPEND && cmd->it_is_ok)
-            {
-                if (cmd->fd_out != -1)
-                    close(cmd->fd_out);
-                cmd->fd_out = open(tmp->next->value, O_WRONLY | O_CREAT | O_APPEND, 0644);
-                if (cmd->fd_out == -1)
-                {
-                    perror("open");
-                    cmd->it_is_ok = 0;
-                }
-            }
-            tmp = tmp->next;
-        }
-        else if (tmp->type == HEREDOC)
-        {
-            cmd->fd_in = t->fd;
-            t = t->n;
+            find_in_or_out(tmp, cmd, &t);
             tmp = tmp->next;
         }
         else if (tmp->type != PIPE)
             add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type));
         if (tmp->type == PIPE || !tmp->next)
-        {
-            add_cmd(ms, cmd);
-            fill_cmds(cmd, tm, ms);
-            free_tokens(tm);
-            tm = NULL;
-            if (tmp->type == PIPE)
-                cmd = create_cmd(tmp->next);
-        }
+            next_cmd(&tm, &cmd, ms, tmp);
         tmp = tmp->next;
     }
 }
@@ -397,7 +414,6 @@ void exec_cmd(t_ms *ms)
     !ft_strcmp(tmp->args[0], "unset") || !ft_strcmp(tmp->args[0], "exit")) && tmp->it_is_ok)
         execute_builtin(tmp->args, ms);
     else
-    {
         while (tmp)
         {
             if (tmp->next && pipe(fd) == -1)
@@ -529,7 +545,6 @@ void exec_cmd(t_ms *ms)
             }
             tmp = tmp->next;
         }
-    }
     int	wstatus;
 	int	last_pid;
 	last_pid = wait(&wstatus);
