@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/20 19:22:06 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/21 21:05:13 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ char *get_cmd_path(char *cmd, t_ms *ms);
 void fill_cmds(t_cmd *ms, t_token *tm, t_ms *m);
 void fill_cmds_file(t_ms *ms);
 int num_of_words(t_token *tmp);
-int num_of_words_no_pip(t_token *tmp);
+int is_quote(char c);
 char *tokenize_to_char(t_token *tokens);
 void free_cmds(t_cmd *cmds);
 #endif

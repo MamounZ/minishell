@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/21 20:33:32 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/22 10:20:51 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,30 +99,27 @@ void free_doc(t_heredoc *ms)
     }
 }
 
-void rm_quote_c(char *str)
+int rm_quote_c(char *str)
 {
-    int i = 0;
-    int j = 0;
-    char quote = 0;
+    int i;
+    int j;
+    char quote;
 
+    i = 0;
+    j = 0;
+    quote = 0;
     while (str[i])
     {
         if ((str[i] == '\'' || str[i] == '\"') && !quote)
-        {
             quote = str[i];
-            i++;
-        }
         else if (str[i] == quote)
-        {
             quote = 0;
-            i++;
-        }
         else
-        {
-            str[j++] = str[i++];
-        }
+            str[j++] = str[i];
+        i++;
     }
     str[j] = '\0';
+    return (1);
 }
 
 char	*expand_heredoc(char **argv, char *input, t_ms *ms)
@@ -169,15 +166,11 @@ char	*expand_heredoc(char **argv, char *input, t_ms *ms)
 				var_name[j] = '\0';
 				value = ft_getenv(var_name, ms);
 				if (value)
-				{
 					ft_strncat(expanded, &value[0], ft_strlen(value));
-				}
 				ft_memset(var_name, 0, sizeof(var_name));
-				//free(value);
 			}
 			else
 			{
-				// If "$" is alone in quotes, preserve it (echo "$")
                 ft_strncat(expanded, "$", 1);
 				ft_strncat(expanded, &input[i], 1);
                 i++;
@@ -188,9 +181,36 @@ char	*expand_heredoc(char **argv, char *input, t_ms *ms)
 			ft_strncat(expanded, &input[i], 1);
 			i++;
 		}
-		// fprintf(stderr, "expanded: %s\n", expanded);
 	}
 	return (expanded);
+}
+
+int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
+{
+    char    *line;
+    char    *new;
+
+    line = readline("> ");
+    if (!line && close(pipe_fd[0]) && close(pipe_fd[1]))
+    {
+        perror("getline");
+        free(line);
+        return 0;
+    }
+    if (expand)
+        new = expand_heredoc(NULL, line, ms);
+    else
+        new = ft_strdup(line);
+    if (ft_strcmp(line, tmp->next->value) == 0)
+    {
+        free(new);
+        return 0;
+    }
+    write(pipe_fd[1], new, ft_strlen(new));
+    write(pipe_fd[1], "\n", 1);
+    free(new);
+    free(line);
+    return 1;
 }
 
 void fill_here_doc(t_ms *ms)
@@ -205,43 +225,15 @@ void fill_here_doc(t_ms *ms)
     {
         if (tmp->type == HEREDOC)
         {
-            if (tmp->next->value[0] == '"' || tmp->next->value[0] == '\'')
-            {
-                rm_quote_c(tmp->next->value);
+            if (is_quote(tmp->next->value[0]) && rm_quote_c(tmp->next->value))
                 expand = 0;
-            }
             if (pipe(pipe_fd) == -1)
             {
                 perror("pipe");
                 break;
             }
-            char *line;
-            while (1)
-            {
-                line = readline("> ");
-                if (!line)
-                {
-                    perror("getline");
-                    free(line);
-                    close(pipe_fd[0]);
-                    close(pipe_fd[1]);
-                    break;
-                }
-                char *new;
-                if (expand)
-                    new = expand_heredoc(NULL, line, ms);
-                else
-                    new = ft_strdup(line);
-                if (strcmp(line, tmp->next->value) == 0)
-                {
-                    free(new);
-                    break;
-                }
-                write(pipe_fd[1], new, ft_strlen(new));
-                write(pipe_fd[1], "\n", 1);
-                free(new);
-            }
-            free(line);
+            while (heredoc_loop(tmp, pipe_fd, expand, ms))
+                ;
             close(pipe_fd[1]);
             add_heredoc(&ms->doc, pipe_fd[0]);
         }
@@ -251,12 +243,16 @@ void fill_here_doc(t_ms *ms)
 
 void fill_cmds_file(t_ms *ms)
 {
+    t_token *tmp;
+    t_cmd *cmd;
+    t_token *tm;
+    t_heredoc *t;
+    
     fill_here_doc(ms);
-    t_token *tmp = ms->tokens;
-    t_cmd *cmd = create_cmd(tmp);
-    t_token *tm = NULL;
-    t_heredoc *t = ms->doc;
-
+    tmp = ms->tokens;
+    tm = NULL;
+    t = ms->doc;
+    cmd = create_cmd(tmp);
     while (tmp)
     {
         if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND)
@@ -311,9 +307,7 @@ void fill_cmds_file(t_ms *ms)
             free_tokens(tm);
             tm = NULL;
             if (tmp->type == PIPE)
-            {
                 cmd = create_cmd(tmp->next);
-            }
         }
         tmp = tmp->next;
     }
@@ -347,37 +341,42 @@ int there_are_a_douler(char *str)
     return (0);
 }
 
+char *dup_token(t_token *tmp)
+{
+    if (tmp->type == REDIR_IN)
+        return (ft_strdup("<"));
+    else if (tmp->type == REDIR_OUT)
+        return (ft_strdup(">"));
+    else if (tmp->type == APPEND)
+        return (ft_strdup(">>"));
+    else if (tmp->type == HEREDOC)
+        return (ft_strdup("<<"));
+    else if (tmp->type == PIPE)
+        return (ft_strdup("|"));
+    else
+        return (ft_strdup(tmp->value));
+}
+
 void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
 {
-    t_token *tmp, *tmo;
-    int i = 0;
-    char *input = tokenize_to_char(tm);
-    char *expanded_input = expand_variables(NULL, input, ms);
-    // fprintf(stderr, "expanded_input: %s\n", expanded_input);
+    t_token *tmp;
+    t_token *tmo;
+    int i;
+    char *input;
+    char *expanded_input;
+
+    i = 0;
+    input = tokenize_to_char(tm);
+    expanded_input = expand_variables(NULL, input, ms);
     tmp = tokenize(expanded_input);
     tmo = tmp;
     free(input);
     free(expanded_input);
-    // print_tokens(tmp);
     rm_quote(tmp);
-
     cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));
     while (tmp)
     {
-        // fprintf(stderr, "input: %s\n", input);
-        if (tmp->type == REDIR_IN)
-            cmd->args[i] = ft_strdup("<");
-        else if (tmp->type == REDIR_OUT)
-            cmd->args[i] = ft_strdup(">");
-        else if (tmp->type == APPEND)
-            cmd->args[i] = ft_strdup(">>");
-        else if (tmp->type == HEREDOC)
-            cmd->args[i] = ft_strdup("<<");
-        else if (tmp->type == PIPE)
-            cmd->args[i] = ft_strdup("|");
-        else
-            cmd->args[i] = ft_strdup(tmp->value);
-        i++;
+        cmd->args[i++] = dup_token(tmp);
         tmp = tmp->next;
     }
     cmd->args[i] = NULL;

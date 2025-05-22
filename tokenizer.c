@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/21 19:46:02 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/21 19:46:09 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/21 21:50:04 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,16 @@ int is_quote(char c) {
 
 t_token_type get_token_type(char *value)
 {
-    if (!strcmp(value, "|")) return PIPE;
-    if (!strcmp(value, "<")) return REDIR_IN;
-    if (!strcmp(value, ">")) return REDIR_OUT;
-    if (!strcmp(value, ">>")) return APPEND;
-    if (!strcmp(value, "<<")) return HEREDOC;
-    return WORD;
+    t_token_type type;
+    
+    type = WORD;
+    if (!strcmp(value, "|")) type = PIPE;
+    if (!strcmp(value, "<")) type = REDIR_IN;
+    if (!strcmp(value, ">")) type = REDIR_OUT;
+    if (!strcmp(value, ">>")) type = APPEND;
+    if (!strcmp(value, "<<")) type = HEREDOC;
+    free(value);
+    return type;
 }
 
 void word_token(char **input, t_token_type *type)
