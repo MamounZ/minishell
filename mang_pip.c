@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/22 18:50:03 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/23 20:25:41 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -400,153 +400,11 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     free_tokens(tmo);
 }
 
-void exec_cmd(t_ms *ms)
+void wait_all(int stdin_copy, int stdout_copy, pid_t pid, t_ms *ms)
 {
-    t_cmd *tmp = ms->cmds;
-    int fd[2];
-    int prev_fd = -1;
-    char *cmd = NULL;
-    pid_t pid;
-    int stdin_copy = dup(STDIN_FILENO);
-    int stdout_copy = dup(STDOUT_FILENO);
-
-    if (tmp && !tmp->next && tmp->args && tmp->args[0] && (!ft_strcmp(tmp->args[0], "cd") || !ft_strcmp(tmp->args[0], "export") ||
-    !ft_strcmp(tmp->args[0], "unset") || !ft_strcmp(tmp->args[0], "exit")) && tmp->it_is_ok)
-        execute_builtin(tmp->args, ms);
-    else
-        while (tmp)
-        {
-            if (tmp->next && pipe(fd) == -1)
-            {
-                perror("pipe");
-                exit(1);
-            }
-            pid = fork();
-            if (pid == 0 && tmp->it_is_ok == 0)
-            {
-                if (tmp->next)
-                {
-                    close(fd[0]);
-                    close(fd[1]);
-                }
-                if (tmp->fd_in != -1)
-                    close(tmp->fd_in);
-                if (tmp->fd_out != -1)
-                    close(tmp->fd_out);
-                if (prev_fd != -1)
-                    close(prev_fd);
-                free_cmds(ms->cmds);
-                free_args(ms->envp_cpy);
-	            free_tokens(ms->tokens);
-                free_doc(ms->doc);
-    	        free(ms);
-                close(stdin_copy);
-                close(stdout_copy);
-                exit(1);
-            }
-            else if (pid == 0)
-            {
-                if (tmp->fd_in != -1)
-                {
-                    dup2(tmp->fd_in, STDIN_FILENO);
-                    close(tmp->fd_in);
-                }
-                else if (prev_fd != -1)
-                {
-                    dup2(prev_fd, STDIN_FILENO);
-                    close(prev_fd);
-                }
-                if (tmp->fd_out != -1)
-                {
-                    dup2(tmp->fd_out, STDOUT_FILENO);
-                    close(tmp->fd_out);
-                }
-                else if (tmp->next)
-                {
-                    close(fd[0]);
-                    dup2(fd[1], STDOUT_FILENO);
-                    close(fd[1]);
-                }
-                if (!tmp || !tmp->args || !tmp->args[0])
-                {
-                    if (tmp->fd_in != -1)
-                        close(tmp->fd_in);
-                    if (tmp->fd_out != -1)
-                        close(tmp->fd_out);
-                    if (prev_fd != -1)
-                        close(prev_fd);
-                    free_cmds(ms->cmds);
-                    free_args(ms->envp_cpy);
-	                free_tokens(ms->tokens);
-                    free_doc(ms->doc);
-    	            free(ms);
-                    close(stdin_copy);
-                    close(stdout_copy);
-                    exit(1);
-                }
-                else if (is_builtin(tmp->args[0]))
-                {
-                    int e;
-                    execute_builtin(tmp->args, ms);
-                    if (tmp->fd_in != -1)
-                        close(tmp->fd_in);
-                    if (tmp->fd_out != -1)
-                        close(tmp->fd_out);
-                    if (prev_fd != -1)
-                        close(prev_fd);
-                    free_cmds(ms->cmds);
-                    free_args(ms->envp_cpy);
-	                free_tokens(ms->tokens);
-                    free_doc(ms->doc);
-                    e = ms->last_exit_status;
-    	            free(ms);
-                    close(stdin_copy);
-                    close(stdout_copy);
-                    exit(e);
-                }
-                else 
-                {               
-                    if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
-                        cmd = ft_strdup(tmp->args[0]);
-                    else
-                        cmd = get_cmd_path(tmp->args[0], ms);
-                    if (cmd)
-                        execve(cmd, tmp->args, ms->envp_cpy);
-                    perror("execve");
-                    if (tmp->fd_in != -1)
-                        close(tmp->fd_in);
-                    if (tmp->fd_out != -1)
-                        close(tmp->fd_out);
-                    if (prev_fd != -1)
-                        close(prev_fd);
-                    free_cmds(ms->cmds);
-                	free_args(ms->envp_cpy);
-	                free_tokens(ms->tokens);
-                    free_doc(ms->doc);
-    	            free(ms);
-                    close(stdin_copy);
-                    close(stdout_copy);
-                    exit(127);
-                }
-            }
-            else
-            {
-                if (prev_fd != -1)
-                    close(prev_fd);
-                if (tmp->next)
-                {
-                    close(fd[1]);
-                    prev_fd = fd[0];
-                }
-                if (tmp->fd_in != -1)
-                    close(tmp->fd_in);
-                if (tmp->fd_out != -1)
-                    close(tmp->fd_out);
-            }
-            tmp = tmp->next;
-        }
     int	wstatus;
 	int	last_pid;
+
 	last_pid = wait(&wstatus);
 	while (last_pid > 0)
 	{
@@ -563,6 +421,143 @@ void exec_cmd(t_ms *ms)
     close(stdin_copy);
     dup2(stdout_copy, STDOUT_FILENO);
     close(stdout_copy);
+}
+
+void in_out_cmds(t_cmd *tmp, int prev_fd, int fd[2])
+{
+    if (tmp->fd_in != -1)
+    {
+        dup2(tmp->fd_in, STDIN_FILENO);
+        close(tmp->fd_in);
+    }
+    else if (prev_fd != -1)
+    {
+        dup2(prev_fd, STDIN_FILENO);
+        close(prev_fd);
+    }
+    if (tmp->fd_out != -1)
+    {
+        dup2(tmp->fd_out, STDOUT_FILENO);
+        close(tmp->fd_out);
+    }
+    else if (tmp->next)
+    {
+        close(fd[0]);
+        dup2(fd[1], STDOUT_FILENO);
+        close(fd[1]);
+    }
+}
+
+void exec_cmd(t_ms *ms)
+{
+    t_cmd *tmp = ms->cmds;
+    int fd[2];
+    int prev_fd = -1;
+    char *cmd = NULL;
+    pid_t pid;
+    int stdin_copy = dup(STDIN_FILENO);
+    int stdout_copy = dup(STDOUT_FILENO);
+
+    while (tmp)
+    {
+        if (tmp->next && pipe(fd) == -1)
+        {
+            perror("pipe");
+            exit(1);
+        }
+        pid = fork();
+        if (pid == 0 && tmp->it_is_ok == 0)
+        {
+            if (tmp->next)
+            {
+                close(fd[0]);
+                close(fd[1]);
+            }
+            if (tmp->fd_in != -1)
+                close(tmp->fd_in);
+            if (tmp->fd_out != -1)
+                close(tmp->fd_out);
+            if (prev_fd != -1)
+                close(prev_fd);
+            free_cmds(ms->cmds);
+            free_args(ms->envp_cpy);
+	        free_tokens(ms->tokens);
+            free_doc(ms->doc);
+            free(ms);
+            close(stdin_copy);
+            close(stdout_copy);
+            exit(1);
+        }
+        else if (pid == 0)
+        {
+            in_out_cmds(tmp, prev_fd, fd);
+            if (!tmp || !tmp->args || !tmp->args[0])
+            {
+                if (tmp->fd_in != -1)
+                    close(tmp->fd_in);
+                if (tmp->fd_out != -1)
+                    close(tmp->fd_out);
+                if (prev_fd != -1)
+                    close(prev_fd);
+                ft_free_ms(ms, 1);
+                close(stdin_copy);
+                close(stdout_copy);
+                exit(1);
+            }
+            else if (is_builtin(tmp->args[0]))
+            {
+                int e;
+                execute_builtin(tmp->args, ms);
+                if (tmp->fd_in != -1)
+                    close(tmp->fd_in);
+                if (tmp->fd_out != -1)
+                    close(tmp->fd_out);
+                if (prev_fd != -1)
+                    close(prev_fd);
+                e = ms->last_exit_status;
+                ft_free_ms(ms, 1);
+                close(stdin_copy);
+                close(stdout_copy);
+                exit(e);
+            }
+            else 
+            {               
+                if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
+                    cmd = ft_strdup(tmp->args[0]);
+                else
+                    cmd = get_cmd_path(tmp->args[0], ms);
+                if (cmd)
+                    execve(cmd, tmp->args, ms->envp_cpy);
+                perror("execve");
+                if (tmp->fd_in != -1)
+                    close(tmp->fd_in);
+                if (tmp->fd_out != -1)
+                    close(tmp->fd_out);
+                if (prev_fd != -1)
+                    close(prev_fd);
+                ft_free_ms(ms, 1);
+                close(stdin_copy);
+                close(stdout_copy);
+                exit(127);
+            }
+        }
+        else
+        {
+            if (prev_fd != -1)
+                close(prev_fd);
+            if (tmp->next)
+            {
+                close(fd[1]);
+                prev_fd = fd[0];
+            }
+            if (tmp->fd_in != -1)
+                close(tmp->fd_in);
+            if (tmp->fd_out != -1)
+                close(tmp->fd_out);
+        }
+        tmp = tmp->next;
+    }
+    wait_all(stdin_copy, stdout_copy, pid, ms);
 }
 
 void free_cmds(t_cmd *cmds)
