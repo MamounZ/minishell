@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/23 20:25:41 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/24 23:12:38 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -400,7 +400,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     free_tokens(tmo);
 }
 
-void wait_all(int stdin_copy, int stdout_copy, pid_t pid, t_ms *ms)
+void wait_all(pid_t pid, t_ms *ms)
 {
     int	wstatus;
 	int	last_pid;
@@ -417,10 +417,6 @@ void wait_all(int stdin_copy, int stdout_copy, pid_t pid, t_ms *ms)
 		}
 		last_pid = wait(&wstatus);
 	}
-    dup2(stdin_copy, STDIN_FILENO);
-    close(stdin_copy);
-    dup2(stdout_copy, STDOUT_FILENO);
-    close(stdout_copy);
 }
 
 void in_out_cmds(t_cmd *tmp, int prev_fd, int fd[2])
@@ -455,8 +451,6 @@ void exec_cmd(t_ms *ms)
     int prev_fd = -1;
     char *cmd = NULL;
     pid_t pid;
-    int stdin_copy = dup(STDIN_FILENO);
-    int stdout_copy = dup(STDOUT_FILENO);
 
     while (tmp)
     {
@@ -479,13 +473,7 @@ void exec_cmd(t_ms *ms)
                 close(tmp->fd_out);
             if (prev_fd != -1)
                 close(prev_fd);
-            free_cmds(ms->cmds);
-            free_args(ms->envp_cpy);
-	        free_tokens(ms->tokens);
-            free_doc(ms->doc);
-            free(ms);
-            close(stdin_copy);
-            close(stdout_copy);
+            ft_free_ms(ms, 1);
             exit(1);
         }
         else if (pid == 0)
@@ -500,8 +488,6 @@ void exec_cmd(t_ms *ms)
                 if (prev_fd != -1)
                     close(prev_fd);
                 ft_free_ms(ms, 1);
-                close(stdin_copy);
-                close(stdout_copy);
                 exit(1);
             }
             else if (is_builtin(tmp->args[0]))
@@ -516,8 +502,6 @@ void exec_cmd(t_ms *ms)
                     close(prev_fd);
                 e = ms->last_exit_status;
                 ft_free_ms(ms, 1);
-                close(stdin_copy);
-                close(stdout_copy);
                 exit(e);
             }
             else 
@@ -536,8 +520,6 @@ void exec_cmd(t_ms *ms)
                 if (prev_fd != -1)
                     close(prev_fd);
                 ft_free_ms(ms, 1);
-                close(stdin_copy);
-                close(stdout_copy);
                 exit(127);
             }
         }
@@ -557,7 +539,7 @@ void exec_cmd(t_ms *ms)
         }
         tmp = tmp->next;
     }
-    wait_all(stdin_copy, stdout_copy, pid, ms);
+    wait_all(pid, ms);
 }
 
 void free_cmds(t_cmd *cmds)
