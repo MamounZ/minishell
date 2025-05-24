@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/24 23:12:38 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/24 23:21:15 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -444,6 +444,22 @@ void in_out_cmds(t_cmd *tmp, int prev_fd, int fd[2])
     }
 }
 
+void clean_child(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
+{
+    if (tmp->next)
+    {
+        close(fd[0]);
+        close(fd[1]);
+    }
+    if (tmp->fd_in != -1)
+        close(tmp->fd_in);
+    if (tmp->fd_out != -1)
+        close(tmp->fd_out);
+    if (prev_fd != -1)
+        close(prev_fd);
+    ft_free_ms(ms, 1);
+}
+
 void exec_cmd(t_ms *ms)
 {
     t_cmd *tmp = ms->cmds;
@@ -462,32 +478,19 @@ void exec_cmd(t_ms *ms)
         pid = fork();
         if (pid == 0 && tmp->it_is_ok == 0)
         {
-            if (tmp->next)
-            {
-                close(fd[0]);
+            if (tmp->next && close(fd[0]))
                 close(fd[1]);
-            }
-            if (tmp->fd_in != -1)
-                close(tmp->fd_in);
-            if (tmp->fd_out != -1)
-                close(tmp->fd_out);
-            if (prev_fd != -1)
-                close(prev_fd);
-            ft_free_ms(ms, 1);
+            clean_child(tmp, prev_fd, fd, ms);
             exit(1);
         }
         else if (pid == 0)
         {
             in_out_cmds(tmp, prev_fd, fd);
-            if (!tmp || !tmp->args || !tmp->args[0])
+            if ((!tmp || !tmp->args || !tmp->args[0]))
             {
-                if (tmp->fd_in != -1)
-                    close(tmp->fd_in);
-                if (tmp->fd_out != -1)
-                    close(tmp->fd_out);
-                if (prev_fd != -1)
-                    close(prev_fd);
-                ft_free_ms(ms, 1);
+                if (tmp->next && close(fd[0]))
+                     close(fd[1]);
+                clean_child(tmp, prev_fd, fd, ms);
                 exit(1);
             }
             else if (is_builtin(tmp->args[0]))
