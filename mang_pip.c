@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/25 09:57:13 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/25 10:17:32 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -500,6 +500,21 @@ void it_is_okay(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
         child_execve(tmp, prev_fd, ms);
 }
 
+void dad_thing(t_cmd *tmp, int *prev_fd, int fd[2])
+{
+    if (*prev_fd != -1)
+        close(*prev_fd);
+    if (tmp->next)
+    {
+        close(fd[1]);
+        *prev_fd = fd[0];
+    }
+    if (tmp->fd_in != -1)
+        close(tmp->fd_in);
+    if (tmp->fd_out != -1)
+        close(tmp->fd_out);
+}
+
 void exec_cmd(t_ms *ms)
 {
     t_cmd *tmp;
@@ -522,16 +537,7 @@ void exec_cmd(t_ms *ms)
         else if (pid == 0)
             it_is_okay(tmp, prev_fd, fd, ms);
         else
-        {
-            if (prev_fd != -1)
-                close(prev_fd);
-            if (tmp->next && close(fd[1]) == 0)
-                prev_fd = fd[0];
-            if (tmp->fd_in != -1)
-                close(tmp->fd_in);
-            if (tmp->fd_out != -1)
-                close(tmp->fd_out);
-        }
+            dad_thing(tmp, &prev_fd, fd);
         tmp = tmp->next;
     }
     wait_all(pid, ms);
