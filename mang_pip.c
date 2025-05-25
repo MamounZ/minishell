@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/24 23:21:15 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/25 08:37:12 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -444,13 +444,8 @@ void in_out_cmds(t_cmd *tmp, int prev_fd, int fd[2])
     }
 }
 
-void clean_child(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
+void clean_child(t_cmd *tmp, int prev_fd, t_ms *ms)
 {
-    if (tmp->next)
-    {
-        close(fd[0]);
-        close(fd[1]);
-    }
     if (tmp->fd_in != -1)
         close(tmp->fd_in);
     if (tmp->fd_out != -1)
@@ -480,7 +475,7 @@ void exec_cmd(t_ms *ms)
         {
             if (tmp->next && close(fd[0]))
                 close(fd[1]);
-            clean_child(tmp, prev_fd, fd, ms);
+            clean_child(tmp, prev_fd, ms);
             exit(1);
         }
         else if (pid == 0)
@@ -490,21 +485,15 @@ void exec_cmd(t_ms *ms)
             {
                 if (tmp->next && close(fd[0]))
                      close(fd[1]);
-                clean_child(tmp, prev_fd, fd, ms);
+                clean_child(tmp, prev_fd, ms);
                 exit(1);
             }
             else if (is_builtin(tmp->args[0]))
             {
                 int e;
                 execute_builtin(tmp->args, ms);
-                if (tmp->fd_in != -1)
-                    close(tmp->fd_in);
-                if (tmp->fd_out != -1)
-                    close(tmp->fd_out);
-                if (prev_fd != -1)
-                    close(prev_fd);
                 e = ms->last_exit_status;
-                ft_free_ms(ms, 1);
+                clean_child(tmp, prev_fd, ms);
                 exit(e);
             }
             else 
@@ -516,13 +505,7 @@ void exec_cmd(t_ms *ms)
                 if (cmd)
                     execve(cmd, tmp->args, ms->envp_cpy);
                 perror("execve");
-                if (tmp->fd_in != -1)
-                    close(tmp->fd_in);
-                if (tmp->fd_out != -1)
-                    close(tmp->fd_out);
-                if (prev_fd != -1)
-                    close(prev_fd);
-                ft_free_ms(ms, 1);
+                clean_child(tmp, prev_fd, ms);
                 exit(127);
             }
         }
