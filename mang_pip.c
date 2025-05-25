@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/25 08:37:12 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/25 09:57:13 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -455,14 +455,60 @@ void clean_child(t_cmd *tmp, int prev_fd, t_ms *ms)
     ft_free_ms(ms, 1);
 }
 
+void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
+{
+    char *cmd;
+
+    if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
+        cmd = ft_strdup(tmp->args[0]);
+    else
+        cmd = get_cmd_path(tmp->args[0], ms);
+    if (cmd)
+        execve(cmd, tmp->args, ms->envp_cpy);
+    perror("execve");
+    clean_child(tmp, prev_fd, ms);
+    exit(127);
+}
+
+void it_is_not_ok(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
+{
+    if (tmp->next && close(fd[0]) == 0)
+        close(fd[1]);
+    clean_child(tmp, prev_fd, ms);
+    exit(1);
+}
+
+void it_is_okay(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
+{
+    in_out_cmds(tmp, prev_fd, fd);
+    if ((!tmp || !tmp->args || !tmp->args[0]))
+    {
+        if (tmp->next && close(fd[0]))
+             close(fd[1]);
+        clean_child(tmp, prev_fd, ms);
+        exit(1);
+    }
+    else if (is_builtin(tmp->args[0]))
+    {
+        int e;
+        execute_builtin(tmp->args, ms);
+        e = ms->last_exit_status;
+        clean_child(tmp, prev_fd, ms);
+        exit(e);
+    }
+    else 
+        child_execve(tmp, prev_fd, ms);
+}
+
 void exec_cmd(t_ms *ms)
 {
-    t_cmd *tmp = ms->cmds;
+    t_cmd *tmp;
     int fd[2];
-    int prev_fd = -1;
-    char *cmd = NULL;
+    int prev_fd;
     pid_t pid;
 
+    tmp = ms->cmds;
+    prev_fd = -1;
     while (tmp)
     {
         if (tmp->next && pipe(fd) == -1)
@@ -472,52 +518,15 @@ void exec_cmd(t_ms *ms)
         }
         pid = fork();
         if (pid == 0 && tmp->it_is_ok == 0)
-        {
-            if (tmp->next && close(fd[0]))
-                close(fd[1]);
-            clean_child(tmp, prev_fd, ms);
-            exit(1);
-        }
+            it_is_not_ok(tmp, prev_fd, fd, ms);
         else if (pid == 0)
-        {
-            in_out_cmds(tmp, prev_fd, fd);
-            if ((!tmp || !tmp->args || !tmp->args[0]))
-            {
-                if (tmp->next && close(fd[0]))
-                     close(fd[1]);
-                clean_child(tmp, prev_fd, ms);
-                exit(1);
-            }
-            else if (is_builtin(tmp->args[0]))
-            {
-                int e;
-                execute_builtin(tmp->args, ms);
-                e = ms->last_exit_status;
-                clean_child(tmp, prev_fd, ms);
-                exit(e);
-            }
-            else 
-            {               
-                if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
-                    cmd = ft_strdup(tmp->args[0]);
-                else
-                    cmd = get_cmd_path(tmp->args[0], ms);
-                if (cmd)
-                    execve(cmd, tmp->args, ms->envp_cpy);
-                perror("execve");
-                clean_child(tmp, prev_fd, ms);
-                exit(127);
-            }
-        }
+            it_is_okay(tmp, prev_fd, fd, ms);
         else
         {
             if (prev_fd != -1)
                 close(prev_fd);
-            if (tmp->next)
-            {
-                close(fd[1]);
+            if (tmp->next && close(fd[1]) == 0)
                 prev_fd = fd[0];
-            }
             if (tmp->fd_in != -1)
                 close(tmp->fd_in);
             if (tmp->fd_out != -1)
