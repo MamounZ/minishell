@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/26 19:12:08 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/26 19:44:17 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,25 +123,26 @@ int minshell_loop(t_ms *ms)
 {
 	char *input;
 
+	input = readline("minishell> ");
+	if (!input)
+	{
+		printf("exit\n");
+		if (g_signal)
+		{
+			ms->last_exit_status = 130;
+			g_signal = 0;
+		}
+		return (0);
+	}
+	if (*input)
+		add_history(input);
 	if (g_signal)
 	{
 		ms->last_exit_status = 130;
 		g_signal = 0;
 	}
-	input = readline("minishell> ");
-	if (!input)
-	{
-		printf("exit\n");
-		return (0);
-	}
-	if (*input)
-		add_history(input);
-	if (check_quotes(input) || ft_strlen(input) == 0)
-	{
-		free(input);
-		return (1);
-	}
-	ms->tokens = tokenize(input);
+	if (!(check_quotes(input) || ft_strlen(input) == 0))
+		ms->tokens = tokenize(input);
 	free(input);
 	input = NULL;
 	return (1);
