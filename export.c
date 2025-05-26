@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 00:42:24 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/19 22:18:44 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/25 12:28:52 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,7 @@ void print_exported_vars(char **envp)
 	}
 }
 
-/* Validate all arguments before modifying envp_cpy */
+/* Validate all arguments before modhiifying envp_cpy */
 int validate_all_args(char **args)
 {
 	int i = 1;

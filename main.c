@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/23 14:54:28 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/26 19:12:08 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,15 +114,20 @@ void init_ms(t_ms *ms, char **argv, char **envp)
 	ms->cmds = NULL;
 	ms->doc = NULL;
 	copy_env(envp, ms);
-	setup_signals();
 	ms->argv = argv;
 	ms->last_exit_status = 0;
+	setup_signals();
 }
 
 int minshell_loop(t_ms *ms)
 {
 	char *input;
 
+	if (g_signal)
+	{
+		ms->last_exit_status = 130;
+		g_signal = 0;
+	}
 	input = readline("minishell> ");
 	if (!input)
 	{
@@ -135,11 +140,6 @@ int minshell_loop(t_ms *ms)
 	{
 		free(input);
 		return (1);
-	}
-	if (g_signal)
-	{
-		ms->last_exit_status = 130;
-		g_signal = 0;
 	}
 	ms->tokens = tokenize(input);
 	free(input);
@@ -164,7 +164,7 @@ int main(int argc, char **argv, char **envp)
 		if (check_token(ms))
 			return (1);
 		fill_cmds_file(ms);
-		if (ms && !ms->cmds->next && ms->cmds->args && ms->cmds->args[0] && (!ft_strcmp(ms->cmds->args[0], "cd") || !ft_strcmp(ms->cmds->args[0], "export") ||
+		if (ms && ms->cmds && !ms->cmds->next && ms->cmds->args && ms->cmds->args[0] && (!ft_strcmp(ms->cmds->args[0], "cd") || !ft_strcmp(ms->cmds->args[0], "export") ||
     		!ft_strcmp(ms->cmds->args[0], "unset") || !ft_strcmp(ms->cmds->args[0], "exit")) && ms->cmds->it_is_ok)
         	execute_builtin(ms->cmds->args, ms);
 		else

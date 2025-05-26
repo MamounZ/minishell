@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/25 10:17:32 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/26 18:58:26 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -417,6 +417,7 @@ void wait_all(pid_t pid, t_ms *ms)
 		}
 		last_pid = wait(&wstatus);
 	}
+    setup_signals();
 }
 
 void in_out_cmds(t_cmd *tmp, int prev_fd, int fd[2])
@@ -481,6 +482,8 @@ void it_is_not_ok(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
 void it_is_okay(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
 {
     in_out_cmds(tmp, prev_fd, fd);
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
     if ((!tmp || !tmp->args || !tmp->args[0]))
     {
         if (tmp->next && close(fd[0]))
@@ -531,6 +534,7 @@ void exec_cmd(t_ms *ms)
             perror("pipe");
             exit(1);
         }
+        signal(SIGINT, SIG_IGN);
         pid = fork();
         if (pid == 0 && tmp->it_is_ok == 0)
             it_is_not_ok(tmp, prev_fd, fd, ms);
