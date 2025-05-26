@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/01 22:14:12 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/26 19:12:08 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int check_quotes(char *input)
 	}
 	return (0);
 }
-// Convert token list into an array of arguments
+
 char **tokens_to_args(t_token *tokens)
 {
 	int count;
@@ -70,84 +70,108 @@ char **tokens_to_args(t_token *tokens)
 void free_args(char **args)
 {
 	int i = 0;
+
+	if (!args)
+		return;
 	while (args[i])
 		free(args[i++]);
 	free(args);
 }
 
+void print_hredoc(t_heredoc *doc)
+{
+	t_heredoc *tmp = doc;
+	while (tmp)
+	{
+		printf("fd: %d\n", tmp->fd);
+		tmp = tmp->n;
+	}
+}
+
+void ft_free_ms(t_ms *ms, int last)
+{
+	free_tokens(ms->tokens);
+	ms->tokens = NULL;
+	free_cmds(ms->cmds);
+	ms->cmds = NULL;
+	free_doc(ms->doc);
+	ms->doc = NULL;
+	if (last)
+	{
+		free_args(ms->envp_cpy);
+		ms->envp_cpy = NULL;
+		free_args(ms->new_env);
+		ms->new_env = NULL;
+		free(ms);
+	}
+}
+
+void init_ms(t_ms *ms, char **argv, char **envp)
+{
+	ms->envp_cpy = NULL;
+	ms->new_env = NULL;
+	ms->tokens = NULL;
+	ms->cmds = NULL;
+	ms->doc = NULL;
+	copy_env(envp, ms);
+	ms->argv = argv;
+	ms->last_exit_status = 0;
+	setup_signals();
+}
+
+int minshell_loop(t_ms *ms)
+{
+	char *input;
+
+	if (g_signal)
+	{
+		ms->last_exit_status = 130;
+		g_signal = 0;
+	}
+	input = readline("minishell> ");
+	if (!input)
+	{
+		printf("exit\n");
+		return (0);
+	}
+	if (*input)
+		add_history(input);
+	if (check_quotes(input) || ft_strlen(input) == 0)
+	{
+		free(input);
+		return (1);
+	}
+	ms->tokens = tokenize(input);
+	free(input);
+	input = NULL;
+	return (1);
+}
+
 int main(int argc, char **argv, char **envp)
 {
-	char	*input;
-	// char *expanded_input;
 	t_ms	*ms;
+	int exit_status;
 
+	exit_status = 0;
 	(void) argv;
 	(void) argc;
 	ms = malloc(sizeof(t_ms));
 	if (!ms)
 		return (0);
-	ms->envp_cpy = NULL;
-	ms->new_env = NULL;
-	ms->tokens = NULL;
-	ms->cmds = NULL;
-	
-	copy_env(envp, ms);
-	setup_signals();
-	ms->argv = argv;
-	while (1)
+	init_ms(ms, argv, envp);
+	while (minshell_loop(ms))
 	{
-		input = readline("minishell> ");
-		if (!input || ft_strcmp(input, "exit") == 0)
-		{
-			printf("exit\n");
-			break;
-		}
-		if (*input)
-		add_history(input);
-		if (check_quotes(input))
-		{
-			free(input);
-			continue;
-		}
-		if (ft_strlen(input) == 0)
-		{
-			free(input);
-			continue;
-		}
-		// expanded_input = expand_variables(argv, input, ms, 1);
-		// ft_printf("%s\n", expanded_input);
-		// expanded_input = input;
-		ms->tokens = tokenize(input);
-		// print_tokens(ms->tokens);
 		if (check_token(ms))
-		{
-			free(input);
-			continue;
-		}
+			return (1);
 		fill_cmds_file(ms);
-		// free(input);
-		// expanded_input = 
-		//fix_tokens(&ms->tokens);
-		// print_tokens(ms->tokens);
-		/*cmd_args = tokens_to_args(ms->tokens);
-		if (is_builtin(cmd_args[0]))
-			execute_builtin(cmd_args, ms);
-		execute_command(ms);*/
-		exec_cmd(ms);
-		free(input);
-		// free(expanded_input);
-		free_tokens(ms->tokens);
-		free_cmds(ms->cmds);
-		ms->tokens = NULL;
-		ms->cmds = NULL;
-		// expanded_input = NULL;
-		input = NULL;
+		if (ms && ms->cmds && !ms->cmds->next && ms->cmds->args && ms->cmds->args[0] && (!ft_strcmp(ms->cmds->args[0], "cd") || !ft_strcmp(ms->cmds->args[0], "export") ||
+    		!ft_strcmp(ms->cmds->args[0], "unset") || !ft_strcmp(ms->cmds->args[0], "exit")) && ms->cmds->it_is_ok)
+        	execute_builtin(ms->cmds->args, ms);
+		else
+			exec_cmd(ms);
+		ft_free_ms(ms, 0);
 	}
-	free_cmds(ms->cmds);
-	free_args(ms->envp_cpy);
-	free_tokens(ms->tokens);
-	free(ms);
-	free(input);
-		// free(expanded_input);
-	return (0);
+	exit_status = ms->last_exit_status;
+	ft_free_ms(ms, 1);
+	return (exit_status);
 }

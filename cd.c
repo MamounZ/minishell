@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cd.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 22:06:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/03/06 22:06:27 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/05/25 10:22:11 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ void ft_cd(char **args, t_ms *ms)
 	if (args[1] && args[2])
 	{
 		printf("minishell: cd: too many arguments\n");
+		ms->last_exit_status = 1;
 		return;
 	}
 
@@ -69,6 +70,7 @@ void ft_cd(char **args, t_ms *ms)
 		if (!dir)
 		{
 			printf("minishell: cd: HOME not set\n");
+			ms->last_exit_status = 1;
 			free(oldpwd);
 			return;
 		}
@@ -76,10 +78,12 @@ void ft_cd(char **args, t_ms *ms)
 	else if (strcmp(args[1], "-") == 0) // Go to OLDPWD
 	{
 		dir = ft_getenv("OLDPWD", ms);
+		ms->last_exit_status = 0;
 		if (dir)
 			printf("%s\n", dir); // Print the new path when using `cd -`
 		else
 		{
+			ms->last_exit_status = 1;
 			printf("minishell: cd: OLDPWD not set\n");
 			free(oldpwd);
 			return;

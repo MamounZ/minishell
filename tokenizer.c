@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   tokenizer.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/21 19:46:02 by yaman-alrif       #+#    #+#             */
+/*   Updated: 2025/05/21 21:50:04 by yaman-alrif      ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 int ft_isspace(char c)
@@ -19,23 +31,52 @@ int is_quote(char c) {
 
 t_token_type get_token_type(char *value)
 {
-    if (!strcmp(value, "|")) return PIPE;
-    if (!strcmp(value, "<")) return REDIR_IN;
-    if (!strcmp(value, ">")) return REDIR_OUT;
-    if (!strcmp(value, ">>")) return APPEND;
-    if (!strcmp(value, "<<")) return HEREDOC;
-    return WORD;
+    t_token_type type;
+    
+    type = WORD;
+    if (!strcmp(value, "|")) type = PIPE;
+    if (!strcmp(value, "<")) type = REDIR_IN;
+    if (!strcmp(value, ">")) type = REDIR_OUT;
+    if (!strcmp(value, ">>")) type = APPEND;
+    if (!strcmp(value, "<<")) type = HEREDOC;
+    free(value);
+    return type;
 }
 
+void word_token(char **input, t_token_type *type)
+{
+    char quote_char;
 
-// Tokenize the input string
+    if (is_quote(**input))
+    {
+        quote_char = *(*input)++;
+        while (**input && **input != quote_char)
+            (*input)++;
+        if (**input == quote_char)
+            (*input)++;
+    }
+    while (**input && !is_operator(*input) && !ft_isspace(**input))
+    {
+        if (is_quote(**input))
+        {
+            quote_char = *(*input)++;
+            while (**input && **input != quote_char)
+                (*input)++;
+            if (**input == quote_char)
+                (*input)++;
+            continue;
+        }
+        (*input)++;
+    }
+    *type = WORD;
+}
+
 t_token *tokenize(char *input)
 {
     t_token *tokens;
     char *token;
     int operator_len;
     t_token_type type;
-    char quote_char;
 
     tokens = NULL;
     while (*input)
@@ -49,36 +90,10 @@ t_token *tokenize(char *input)
         if (operator_len)
         {
             input += operator_len;
-            char *op = ft_substr(token, 0, operator_len);
-            type = get_token_type(op);
-            free(op);
+            type = get_token_type(ft_substr(token, 0, operator_len));
         }
         else
-        {
-            if (is_quote(*input))
-            {
-                quote_char = *input++;
-                while (*input && *input != quote_char)
-                    input++;
-                if (*input == quote_char)
-                    input++;
-                type = WORD;
-            }
-            while (*input && !is_operator(input) && !ft_isspace(*input))
-            {
-                if (is_quote(*input))
-                {
-                    quote_char = *input++;
-                    while (*input && *input != quote_char)
-                        input++;
-                    if (*input == quote_char)
-                        input++;
-                    continue;
-                }
-                input++;
-            }
-            type = WORD;
-        }
+            word_token(&input, &type);
         add_token(&tokens, new_token(ft_substr(token, 0, input - token), type));
     }
     return tokens;
@@ -94,33 +109,27 @@ void print_tokens(t_token *tokens) {
 
 void rm_quote(t_token *ms)
 {
-    t_token *tmp = ms;
-    int in_quotes = 0;
-    char quote_char;
+    t_token *tmp;
+    int in_quotes;
+    int i;
+    int j;
+
+    tmp = ms;
+    in_quotes = 0;
     while (tmp)
     {
-        int j = 0;
-        int i = 0;
+        i = -1;
+        j = 0;
         if (tmp->type == WORD)
-        {
-            while (tmp->value[i])
+            while (tmp->value[++i])
             {
                 if (is_quote(tmp->value[i]) && !in_quotes)
-                {
-                    quote_char = tmp->value[i];
-                    in_quotes = 1;
-                    i++;
-                    continue;
-                }
-                else if (in_quotes && tmp->value[i] == quote_char)
-                {
-                    i++;
+                    in_quotes = tmp->value[i];
+                else if (in_quotes && tmp->value[i] == in_quotes)
                     in_quotes = 0;
-                    continue;
-                }
-                tmp->value[j++] = tmp->value[i++];
+                else 
+                    tmp->value[j++] = tmp->value[i];
             }
-        }
         tmp->value[j] = '\0';
         tmp = tmp->next;
     }

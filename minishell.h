@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/08 10:42:39 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/23 15:04:23 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include "libft/includes/ft_printf.h"
 #include <sys/wait.h>
 
+extern int g_signal;
 
 typedef enum e_token_type {
     WORD, PIPE, REDIR_IN, REDIR_OUT, HEREDOC, APPEND
@@ -59,10 +60,15 @@ typedef struct s_ms
     t_cmd   *cmds;
     t_heredoc *doc;
     char    **argv;
+    int     last_exit_status;
 }		t_ms;
 
+void ft_free_ms(t_ms *ms, int last);
+void free_doc(t_heredoc *doc);
 void copy_env(char **envp, t_ms *ms);
-char *expand_variables(char **argv, char *input, t_ms *ms, int last_exit_status);
+void ft_exit(char **args, t_ms *ms);
+void print_args(char **args);
+char *expand_variables(char **argv, char *input, t_ms *ms);
 void execute_builtin(char **args, t_ms *ms);
 int is_builtin(char *cmd);
 int	is_valid_var_char(char c);
@@ -91,7 +97,7 @@ char *get_cmd_path(char *cmd, t_ms *ms);
 void fill_cmds(t_cmd *ms, t_token *tm, t_ms *m);
 void fill_cmds_file(t_ms *ms);
 int num_of_words(t_token *tmp);
-int num_of_words_no_pip(t_token *tmp);
+int is_quote(char c);
 char *tokenize_to_char(t_token *tokens);
 void free_cmds(t_cmd *cmds);
 #endif
