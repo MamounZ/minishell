@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/21 19:46:02 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/30 09:50:27 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 10:37:05 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ void word_token(char **input, t_token_type *type)
     *type = WORD;
 }
 
-t_token *tokenize(char *input)
+t_token *tokenize(char *input, t_ms *ms)
 {
     t_token *tokens;
     char *token;
@@ -96,7 +96,7 @@ t_token *tokenize(char *input)
         }
         else
             word_token(&input, &type);
-        if (!add_token(&tokens, new_token(ft_substr(token, 0, input - token), type)))
+        if (!add_token(&tokens, new_token(ft_substr(token, 0, input - token), type), ms))
             return (NULL);
     }
     return tokens;

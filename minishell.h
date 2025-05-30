@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/30 09:50:11 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 10:38:27 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ typedef struct s_ms
     t_heredoc *doc;
     char    **argv;
     int     last_exit_status;
+    int     err;
 }		t_ms;
 
 void ft_free_ms(t_ms *ms, int last);
@@ -82,10 +83,10 @@ void add_to_env(char *arg, t_ms *ms);
 void ft_cd(char **args, t_ms *ms);
 char **realloc_env(char **envp, char *new_var);
 void setup_signals(void);
-t_token *tokenize(char *input);
+t_token *tokenize(char *input, t_ms *ms);
 void print_tokens(t_token *tokens);
 t_token *new_token(char *value, t_token_type type);
-int add_token(t_token **tokens, t_token *new_token);
+int add_token(t_token **tokens, t_token *new_token, t_ms *ms);
 void free_tokens(t_token *tokens);
 int check_token(t_ms *ms);
 void execute_command(t_ms *ms);

@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 11:46:47 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/30 09:53:42 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 10:37:30 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,13 +27,14 @@ t_token *new_token(char *value, t_token_type type)
     return (token);
 }
 
-int add_token(t_token **tokens, t_token *new_token)
+int add_token(t_token **tokens, t_token *new_token, t_ms *ms)
 {
     t_token *tmp;
 
     if (!new_token)
     {
         free_tokens(*tokens);
+        ms->err = 1;
         return 0;
     }
     if (!*tokens)

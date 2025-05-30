@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/30 09:48:06 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 10:40:30 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ void ft_free_ms(t_ms *ms, int last)
 	ms->cmds = NULL;
 	free_doc(ms->doc);
 	ms->doc = NULL;
+	ms->err = 0;
 	if (last)
 	{
 		free_args(ms->envp_cpy);
@@ -116,6 +117,7 @@ void init_ms(t_ms *ms, char **argv, char **envp)
 	copy_env(envp, ms);
 	ms->argv = argv;
 	ms->last_exit_status = 0;
+	ms->err = 0;
 	setup_signals();
 }
 
@@ -142,7 +144,7 @@ int minshell_loop(t_ms *ms)
 		g_signal = 0;
 	}
 	if (!(check_quotes(input)))
-		ms->tokens = tokenize(input);
+		ms->tokens = tokenize(input, ms);
 	free(input);
 	input = NULL;
 	return (1);
@@ -150,7 +152,7 @@ int minshell_loop(t_ms *ms)
 
 int	token_alloc_good(t_ms *ms)
 {
-	if (ms->tokens)
+	if (ms->err == 0)
 		return (1);
 	ft_free_ms(ms, 1);
 	exit (1);
