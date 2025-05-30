@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/30 09:57:37 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 10:46:37 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -337,7 +337,7 @@ void fill_cmds_file(t_ms *ms)
             tmp = tmp->next;
         }
         else if (tmp->type != PIPE)
-            add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type));
+            add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type), ms);
         if (tmp->type == PIPE || !tmp->next)
             next_cmd(&tm, &cmd, ms, tmp);
         tmp = tmp->next;
@@ -399,7 +399,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
     i = 0;
     input = tokenize_to_char(tm);
     expanded_input = expand_variables(NULL, input, ms);
-    tmp = tokenize(expanded_input);
+    tmp = tokenize(expanded_input, ms);
     tmo = tmp;
     free(input);
     free(expanded_input);
