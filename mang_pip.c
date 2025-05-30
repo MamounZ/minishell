@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/26 18:58:26 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/29 17:32:12 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,20 @@ t_cmd *create_cmd(t_token *tmp)
     return (cmd);
 }
 
+void close_cmds(t_cmd *cmds)
+{
+    while (cmds)
+    {
+        if (cmds->fd_in != -1)
+            close(cmds->fd_in);
+        if (cmds->fd_out != -1)
+            close(cmds->fd_out);
+        cmds->fd_in = -1;
+        cmds->fd_out = -1;
+        cmds = cmds->next;
+    }
+}
+
 void add_cmd(t_ms *ms, t_cmd *cmd)
 {
     if (!ms->cmds)
@@ -111,7 +125,7 @@ int rm_quote_c(char *str)
     while (str[i])
     {
         if ((str[i] == '\'' || str[i] == '\"') && !quote)
-            quote = str[i];
+        quote = str[i];
         else if (str[i] == quote)
             quote = 0;
         else
@@ -423,36 +437,30 @@ void wait_all(pid_t pid, t_ms *ms)
 void in_out_cmds(t_cmd *tmp, int prev_fd, int fd[2])
 {
     if (tmp->fd_in != -1)
-    {
         dup2(tmp->fd_in, STDIN_FILENO);
-        close(tmp->fd_in);
-    }
     else if (prev_fd != -1)
-    {
         dup2(prev_fd, STDIN_FILENO);
-        close(prev_fd);
-    }
     if (tmp->fd_out != -1)
-    {
         dup2(tmp->fd_out, STDOUT_FILENO);
-        close(tmp->fd_out);
-    }
     else if (tmp->next)
+        dup2(fd[1], STDOUT_FILENO);
+    if (tmp->fd_in != -1)
+        close(tmp->fd_in);
+    if (tmp->fd_out != -1)
+        close (tmp->fd_out);
+    if (prev_fd != -1)
+        close (prev_fd);
+    if (tmp->next)
     {
         close(fd[0]);
-        dup2(fd[1], STDOUT_FILENO);
         close(fd[1]);
     }
 }
 
 void clean_child(t_cmd *tmp, int prev_fd, t_ms *ms)
 {
-    if (tmp->fd_in != -1)
-        close(tmp->fd_in);
-    if (tmp->fd_out != -1)
-        close(tmp->fd_out);
-    if (prev_fd != -1)
-        close(prev_fd);
+    (void) prev_fd;
+    close_cmds(tmp->next);
     ft_free_ms(ms, 1);
 }
 
@@ -460,6 +468,7 @@ void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
 {
     char *cmd;
 
+    close_cmds(tmp->next);
     if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
         cmd = ft_strdup(tmp->args[0]);
     else
@@ -473,8 +482,7 @@ void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
 
 void it_is_not_ok(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
 {
-    if (tmp->next && close(fd[0]) == 0)
-        close(fd[1]);
+    in_out_cmds(tmp, prev_fd, fd);
     clean_child(tmp, prev_fd, ms);
     exit(1);
 }
@@ -486,8 +494,6 @@ void it_is_okay(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
     signal(SIGQUIT, SIG_DFL);
     if ((!tmp || !tmp->args || !tmp->args[0]))
     {
-        if (tmp->next && close(fd[0]))
-             close(fd[1]);
         clean_child(tmp, prev_fd, ms);
         exit(1);
     }
@@ -558,3 +564,4 @@ void free_cmds(t_cmd *cmds)
         free(tmp);
     }
 }
+
