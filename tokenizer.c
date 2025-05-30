@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/21 19:46:02 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/21 21:50:04 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 09:50:27 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,9 @@ int is_quote(char c) {
 t_token_type get_token_type(char *value)
 {
     t_token_type type;
-    
+
+    if (!value)
+        return (FAIL);
     type = WORD;
     if (!strcmp(value, "|")) type = PIPE;
     if (!strcmp(value, "<")) type = REDIR_IN;
@@ -94,7 +96,8 @@ t_token *tokenize(char *input)
         }
         else
             word_token(&input, &type);
-        add_token(&tokens, new_token(ft_substr(token, 0, input - token), type));
+        if (!add_token(&tokens, new_token(ft_substr(token, 0, input - token), type)))
+            return (NULL);
     }
     return tokens;
 }

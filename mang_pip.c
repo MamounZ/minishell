@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/29 17:32:12 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 09:57:37 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,7 +244,7 @@ void fill_here_doc(t_ms *ms)
             if (pipe(pipe_fd) == -1)
             {
                 perror("pipe");
-                break;
+                break ;
             }
             while (heredoc_loop(tmp, pipe_fd, expand, ms))
                 ;

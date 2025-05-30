@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/26 19:44:17 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 09:48:06 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ int minshell_loop(t_ms *ms)
 	input = readline("minishell> ");
 	if (!input)
 	{
-		printf("exit\n");
+		ft_printf("exit\n");
 		if (g_signal)
 		{
 			ms->last_exit_status = 130;
@@ -141,11 +141,19 @@ int minshell_loop(t_ms *ms)
 		ms->last_exit_status = 130;
 		g_signal = 0;
 	}
-	if (!(check_quotes(input) || ft_strlen(input) == 0))
+	if (!(check_quotes(input)))
 		ms->tokens = tokenize(input);
 	free(input);
 	input = NULL;
 	return (1);
+}
+
+int	token_alloc_good(t_ms *ms)
+{
+	if (ms->tokens)
+		return (1);
+	ft_free_ms(ms, 1);
+	exit (1);
 }
 
 int main(int argc, char **argv, char **envp)
@@ -158,11 +166,11 @@ int main(int argc, char **argv, char **envp)
 	(void) argc;
 	ms = malloc(sizeof(t_ms));
 	if (!ms)
-		return (0);
+		return (1);
 	init_ms(ms, argv, envp);
 	while (minshell_loop(ms))
 	{
-		if (check_token(ms))
+		if (token_alloc_good(ms) && check_token(ms))
 			return (1);
 		fill_cmds_file(ms);
 		if (ms && ms->cmds && !ms->cmds->next && ms->cmds->args && ms->cmds->args[0] && (!ft_strcmp(ms->cmds->args[0], "cd") || !ft_strcmp(ms->cmds->args[0], "export") ||
