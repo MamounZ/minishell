@@ -6,22 +6,29 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/30 10:46:37 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/05/30 17:57:45 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void add_heredoc(t_heredoc **head, int fd)
+void add_heredoc(t_ms *ms, int fd)
 {
-    t_heredoc *new = malloc(sizeof(t_heredoc));
-    t_heredoc *tmp = *head;
+    t_heredoc *new;
+    t_heredoc *tmp;
 
+    new = malloc(sizeof(t_heredoc));
+    if (!new)
+    {
+        ft_free_ms(ms, 1);
+        exit (1);
+    }
+    tmp = ms->doc;
     new->fd = fd;
     new->n = NULL;
-    if (!(*head))
+    if (!(tmp))
     {
-        *head = new;
+        ms->doc = new;
         return ;
     }
     while(tmp->n)
@@ -47,12 +54,15 @@ int num_of_words(t_token *tmp)
     return (count - it_is);
 }
 
-t_cmd *create_cmd(t_token *tmp)
+t_cmd *create_cmd(t_token *tmp, t_ms *ms)
 {
     (void) tmp;
     t_cmd *cmd = malloc(sizeof(t_cmd));
     if (!cmd)
-        return (NULL);
+    {
+        ft_free_ms(ms, 1);
+        exit (1);
+    }
     cmd->args = NULL;
     cmd->path = NULL;
     cmd->fd_in = -1;
@@ -205,11 +215,12 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     char    *new;
 
     line = readline("> ");
-    if (!line && close(pipe_fd[0]) && close(pipe_fd[1]))
+    if (!line && close(pipe_fd[0]) == 0 && close(pipe_fd[1]) == 0)
     {
         perror("getline");
         free(line);
-        return 0;
+        ft_free_ms(ms, 1);
+        exit (1);
     }
     if (expand)
         new = expand_heredoc(NULL, line, ms);
@@ -244,12 +255,13 @@ void fill_here_doc(t_ms *ms)
             if (pipe(pipe_fd) == -1)
             {
                 perror("pipe");
-                break ;
+                ft_free_ms(ms, 1);
+                exit (1);
             }
             while (heredoc_loop(tmp, pipe_fd, expand, ms))
                 ;
             close(pipe_fd[1]);
-            add_heredoc(&ms->doc, pipe_fd[0]);
+            add_heredoc(ms, pipe_fd[0]);
         }
         tmp = tmp->next;
     }
@@ -298,7 +310,7 @@ int next_cmd(t_token **tm, t_cmd **cmd, t_ms *ms, t_token *tmp)
     free_tokens(*tm);
     *tm = NULL;
     if (tmp->type == PIPE)
-        *cmd = create_cmd(tmp->next);
+        *cmd = create_cmd(tmp->next, ms);
     return (1);
 }
 
@@ -328,7 +340,7 @@ void fill_cmds_file(t_ms *ms)
     tmp = ms->tokens;
     tm = NULL;
     t = ms->doc;
-    cmd = create_cmd(tmp);
+    cmd = create_cmd(tmp, ms);
     while (tmp)
     {
         if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND || tmp->type == HEREDOC)
