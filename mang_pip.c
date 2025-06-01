@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/30 17:57:45 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/01 22:12:58 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -410,7 +410,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
 
     i = 0;
     input = tokenize_to_char(tm);
-    expanded_input = expand_variables(NULL, input, ms);
+    expanded_input = expand_variables(ms->argv, input, ms);
     tmp = tokenize(expanded_input, ms);
     tmo = tmp;
     free(input);

@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/13 19:31:19 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/01 22:50:38 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,123 @@ char *ft_getenv(char *var, t_ms *ms)
 	return (NULL);
 }
 // handle echo "\$USER"
+
+int ft_numlen(int num)
+{
+	int len;
+
+	len = 0;
+	if (num < 0)
+	{
+		num = -num;
+		len++;
+	}
+	if (num == 0)
+		return (1);
+	while (num > 0)
+	{
+		num /= 10;
+		len++;
+	}
+	return (len);
+}
+
+int size_expander(char **argv, char *input, t_ms *ms)
+{
+	int s;
+	int i;
+	int j;
+	int in_single_quotes;
+	int in_double_quotes;
+	char var_name[256];
+
+	s = 0;
+	i = 0;
+	in_single_quotes = 0;
+	in_double_quotes = 0;
+	while(input[i])
+	{
+		if (input[i] == '\'' && !in_double_quotes)
+		{
+			in_single_quotes = !in_single_quotes;
+			s++;
+			i++;
+		}
+		else if (input[i] == '\"' && !in_single_quotes)
+		{
+			in_double_quotes = !in_double_quotes;
+			s++;
+			i++;
+		}
+		else if (input[i] == '$' && input[i + 1] && !in_single_quotes) // Expand only outside single quotes
+		{
+			i++;
+			if (input[i] == '0')
+			{
+				s += ft_strlen(argv[0]);
+				i++;
+			}
+			else if (input[i] >= '1' && input[i] <= '9')
+				i++;
+			else if (input[i] == '?')
+			{
+				s += ft_numlen(ms->last_exit_status);
+				i++;
+			}
+			else if (is_valid_var_char(input[i]))
+			{
+				j = 0;
+				while (is_valid_var_char(input[i]))
+					var_name[j++] = input[i++];
+				var_name[j] = '\0';
+				char *value = ft_getenv(var_name, ms);
+				if (value)
+				{
+					int z = 0;
+					while (value[z])
+					{
+						if (value[z] == '\"' && !in_double_quotes)
+							s += 3;
+						else if (value[z] == '"' && in_double_quotes)
+							s += 5; 
+						else if (value[z] == '\'' && !in_double_quotes)
+							s += 3;
+						else
+							s++;
+						z++;
+					}
+				}
+				ft_memset(var_name, 0, sizeof(var_name));
+			}
+			else
+			{
+				// If "$" is alone in quotes, preserve it (echo "$")
+				if (in_double_quotes && (input[i] == '\'' || input[i] == '\"'))
+				{
+					s++;
+					continue;
+				}
+				// If $ is followed by a quote, do NOT count it
+				if (input[i] == '\'' || input[i] == '\"')
+					continue;
+				// Otherwise, keep $
+				s++;
+				if (input[i]) // Add next character if not at end
+				{
+					s++;
+					i++;
+				}
+			}
+		}
+		else
+		{
+			s++;
+			i++;
+		}
+	}
+	return (s + 2);
+}
+
 char	*expand_variables(char **argv, char *input, t_ms *ms)
 {
 	int i;
@@ -63,7 +180,7 @@ char	*expand_variables(char **argv, char *input, t_ms *ms)
 	int in_single_quotes = 0;
 	int in_double_quotes = 0;
 
-	expanded = malloc(10000);
+	expanded = malloc(size_expander(argv, input, ms) * sizeof(char));
 	if (!expanded)
 		return NULL;
 	expanded[0] = '\0';
@@ -75,16 +192,14 @@ char	*expand_variables(char **argv, char *input, t_ms *ms)
 			in_single_quotes = !in_single_quotes;
 			ft_strncat(expanded, &input[i], 1);
 			i++;
-			continue;
 		}
 		else if (input[i] == '\"' && !in_single_quotes)
 		{
 			in_double_quotes = !in_double_quotes;
 			ft_strncat(expanded, &input[i], 1);
 			i++;
-			continue;
 		}
-		if (input[i] == '$' && input[i + 1] && !in_single_quotes) // Expand only outside single quotes
+		else if (input[i] == '$' && input[i + 1] && !in_single_quotes) // Expand only outside single quotes
 		{
 			i++;
 			if (input[i] == '0')
@@ -163,7 +278,7 @@ char	*expand_variables(char **argv, char *input, t_ms *ms)
 			ft_strncat(expanded, &input[i], 1);
 			i++;
 		}
-		// fprintf(stderr, "expanded: %s\n", expanded);
 	}
+	// fprintf(stderr, "expanded: %s\n", expanded);
 	return (expanded);
 }

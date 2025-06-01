@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/30 10:40:30 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/01 22:13:11 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,7 +164,6 @@ int main(int argc, char **argv, char **envp)
 	int exit_status;
 
 	exit_status = 0;
-	(void) argv;
 	(void) argc;
 	ms = malloc(sizeof(t_ms));
 	if (!ms)
