@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   mang_pip.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/26 18:58:26 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/01 22:43:11 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,7 +218,7 @@ void fill_here_doc(t_ms *ms)
     t_token *tmp;
     int expand;
     int pipe_fd[2];
-    
+
     tmp = ms->tokens;
     expand = 1;
     while (tmp)
@@ -309,7 +309,7 @@ void fill_cmds_file(t_ms *ms)
     t_cmd *cmd;
     t_token *tm;
     t_heredoc *t;
-    
+
     fill_here_doc(ms);
     tmp = ms->tokens;
     tm = NULL;
@@ -384,7 +384,7 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
 
     i = 0;
     input = tokenize_to_char(tm);
-    expanded_input = expand_variables(NULL, input, ms);
+    expanded_input = expand_variables(input, ms);
     tmp = tokenize(expanded_input);
     tmo = tmp;
     free(input);
@@ -499,7 +499,7 @@ void it_is_okay(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
         clean_child(tmp, prev_fd, ms);
         exit(e);
     }
-    else 
+    else
         child_execve(tmp, prev_fd, ms);
 }
 

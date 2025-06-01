@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/23 15:04:23 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/01 22:57:11 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ typedef struct s_token {
 typedef struct s_heredoc
 {
     int fd;
-    struct s_heredoc *n; 
+    struct s_heredoc *n;
 } t_heredoc;
 
 
@@ -63,12 +63,24 @@ typedef struct s_ms
     int     last_exit_status;
 }		t_ms;
 
+typedef struct s_expand
+{
+    int i;
+    int j;
+    int in_single_quotes;
+    int in_double_quotes;
+    char var_name[256];
+    char *expanded;
+    char *exit_status;
+    char *value;
+} t_expand;
+
 void ft_free_ms(t_ms *ms, int last);
 void free_doc(t_heredoc *doc);
 void copy_env(char **envp, t_ms *ms);
 void ft_exit(char **args, t_ms *ms);
 void print_args(char **args);
-char *expand_variables(char **argv, char *input, t_ms *ms);
+char *expand_variables(char *input, t_ms *ms);
 void execute_builtin(char **args, t_ms *ms);
 int is_builtin(char *cmd);
 int	is_valid_var_char(char c);
