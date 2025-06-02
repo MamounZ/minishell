@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/02 09:48:19 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/02 20:27:23 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ typedef struct s_expand
     char *expanded;
     char *exit_status;
     char *value;
+    int size;
 } t_expand;
 
 void ft_free_ms(t_ms *ms, int last);
@@ -113,4 +114,6 @@ int num_of_words(t_token *tmp);
 int is_quote(char c);
 char *tokenize_to_char(t_token *tokens);
 void free_cmds(t_cmd *cmds);
+int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms);
+void setup_heredoc_signals(void);
 #endif

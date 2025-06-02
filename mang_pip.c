@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/02 12:29:09 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/02 20:22:43 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,67 +147,53 @@ int rm_quote_c(char *str)
     return (1);
 }
 
-char	*expand_heredoc(char **argv, char *input, t_ms *ms)
+int handle_variable_expansion_heredoc(char *input, t_expand *e, t_ms *ms)
 {
-	int i;
-	int j;
-	char *expanded;
-	char var_name[256];
-	char *exit_status;
-	char *value;
+    if (is_valid_var_char(input[e->i]))
+    {
+        e->j = 0;
+        while (is_valid_var_char(input[e->i]))
+            e->var_name[e->j++] = input[e->i++];
+        e->var_name[e->j] = '\0';
+        e->value = ft_getenv(e->var_name, ms);
+        if (e->value)
+            ft_strncat(e->expanded, &e->value[0], ft_strlen(e->value));
+        ft_memset(e->var_name, 0, sizeof(e->var_name));
+        return (1);
+    }
+    return (0);
+}
+void handle_plain_dollar(char *input, t_expand *e)
+{
+    ft_strncat(e->expanded, "$", 1);
+    if (input[e->i])
+        ft_strncat(e->expanded, &input[e->i++], 1);
+}
 
-	expanded = malloc(10000);
-	if (!expanded)
-		return NULL;
-	expanded[0] = '\0';
-	i = 0;
-	while (input[i])
-	{
-		if (input[i] == '$' && input[i + 1])
-		{
-			i++;
-			if (input[i] == '0')
-			{
-				ft_strcat(expanded, argv[0]);
-				i++;
-			}
-			else if (input[i] >= '1' && input[i] <= '9')
-			{
-				ft_strcat(expanded, "");
-				i++;
-			}
-			else if (input[i] == '?')
-			{
-				exit_status = ft_itoa(ms->last_exit_status);
-				ft_strcat(expanded, exit_status);
-				free(exit_status);
-				i++;
-			}
-			else if (is_valid_var_char(input[i]))
-			{
-				j = 0;
-				while (is_valid_var_char(input[i]))
-					var_name[j++] = input[i++];
-				var_name[j] = '\0';
-				value = ft_getenv(var_name, ms);
-				if (value)
-					ft_strncat(expanded, &value[0], ft_strlen(value));
-				ft_memset(var_name, 0, sizeof(var_name));
-			}
-			else
-			{
-                ft_strncat(expanded, "$", 1);
-				ft_strncat(expanded, &input[i], 1);
-                i++;
-			}
-		}
+char	*expand_heredoc(char *input, t_ms *ms)
+{
+    t_expand e;
+
+    ft_bzero(&e, sizeof(e));
+    e.expanded = malloc(10000);
+    if (!e.expanded)
+        return NULL;
+    e.expanded[0] = '\0';
+    while (input[e.i])
+    {
+        if (input[e.i] == '$' && input[e.i + 1])
+        {
+            e.i++;
+            if (handle_special_dollar_cases(input, &e, ms))
+                continue;
+            if (handle_variable_expansion_heredoc(input, &e, ms))
+                continue;
+            handle_plain_dollar(input, &e);
+        }
 		else
-		{
-			ft_strncat(expanded, &input[i], 1);
-			i++;
-		}
-	}
-	return (expanded);
+            ft_strncat(e.expanded, &input[e.i++], 1);
+    }
+	return (e.expanded);
 }
 
 void exit_heredoc(t_ms *ms, char *line)
@@ -224,10 +210,17 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     char    *new;
 
     line = readline("> ");
+    if (g_signal)
+    {
+        close(pipe_fd[0]);
+        close(pipe_fd[1]);
+        ft_free_ms(ms, 1);
+        exit(130);
+    }
     if (!line && close(pipe_fd[0]) == 0 && close(pipe_fd[1]) == 0)
         exit_heredoc(ms, line);
     if (expand)
-        new = expand_heredoc(NULL, line, ms);
+        new = expand_heredoc(line, ms);
     else
         new = ft_strdup(line);
     if (ft_strcmp(line, tmp->next->value) == 0)
@@ -245,7 +238,8 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
 void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
 {
     pid_t pid;
-    int wstatus;
+    // int old_globle = g_signal;
+    // int wstatus = 0;
 
     signal(SIGINT, SIG_IGN);
     pid = fork();
@@ -256,22 +250,24 @@ void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     }
     if (pid == 0)
     {
-        /*signal(SIGINT, SIG_DFL);
-        signal(SIGQUIT, SIG_DFL); mamoon signal*/
-        while (heredoc_loop(tmp, pipe_fd, expand, ms))
-            ;
+        setup_heredoc_signals(); /*mamoon signal*/
+            while (heredoc_loop(tmp, pipe_fd, expand, ms));
         close(pipe_fd[1]);
         close(pipe_fd[0]);
         ft_free_ms(ms, 1);
-        exit (1);
+        exit (0);
     }
     else
     {
-        wait(&wstatus);
-        if (WIFEXITED(wstatus))
-			ms->last_exit_status = WEXITSTATUS(wstatus);
-		else if (WIFSIGNALED(wstatus))
-			ms->last_exit_status = 128 + WTERMSIG(wstatus);
+        int status;
+        waitpid(pid, &status, 0);
+        if (WIFEXITED(status))
+            ms->last_exit_status = WEXITSTATUS(status);
+        else if (WIFSIGNALED(status))
+            ms->last_exit_status = 128 + WTERMSIG(status);
+        if (ms->last_exit_status == 130)
+            g_signal = 1;
+        
         setup_signals();
         close(pipe_fd[1]);
         add_heredoc(ms, pipe_fd[0]);

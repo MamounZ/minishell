@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 15:28:37 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/19 14:46:47 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/02 20:00:17 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,4 +28,18 @@ void setup_signals(void)
 {
 	signal(SIGINT, handle_sigint); // Handle Ctrl-C
 	signal(SIGQUIT, SIG_IGN);	   // Ignore Ctrl-\ (SIGQUIT)
+}
+
+void heredoc_sigint(int sig)
+{
+	(void)sig;
+	ft_printf("\n");
+	close (0);
+	g_signal = 1;
+}
+
+void setup_heredoc_signals(void)
+{
+	signal(SIGINT, heredoc_sigint); // Exit on Ctrl+C
+	signal(SIGQUIT, SIG_IGN);		// Ignore SIGQUIT
 }
