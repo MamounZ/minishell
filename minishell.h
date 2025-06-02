@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/30 10:38:27 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/02 09:48:19 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,12 +64,24 @@ typedef struct s_ms
     int     err;
 }		t_ms;
 
+typedef struct s_expand
+{
+    int i;
+    int j;
+    int in_single_quotes;
+    int in_double_quotes;
+    char var_name[256];
+    char *expanded;
+    char *exit_status;
+    char *value;
+} t_expand;
+
 void ft_free_ms(t_ms *ms, int last);
 void free_doc(t_heredoc *doc);
 void copy_env(char **envp, t_ms *ms);
 void ft_exit(char **args, t_ms *ms);
 void print_args(char **args);
-char *expand_variables(char **argv, char *input, t_ms *ms);
+char *expand_variables(char *input, t_ms *ms);
 void execute_builtin(char **args, t_ms *ms);
 int is_builtin(char *cmd);
 int	is_valid_var_char(char c);
