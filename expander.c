@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
 /*   Updated: 2025/06/02 09:46:08 by yaman-alrif      ###   ########.fr       */
@@ -184,7 +184,6 @@ int len_handle_variable_expansion(char *input, t_expand *e, t_ms *ms, int *size)
 	}
 	return (0);
 }
-
 int handle_variable_expansion(char *input, t_expand *e, t_ms *ms)
 {
 	if (is_valid_var_char(input[e->i]))

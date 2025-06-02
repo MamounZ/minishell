@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
 /*   Updated: 2025/06/02 09:48:19 by yaman-alrif      ###   ########.fr       */
@@ -39,7 +39,7 @@ typedef struct s_token {
 typedef struct s_heredoc
 {
     int fd;
-    struct s_heredoc *n; 
+    struct s_heredoc *n;
 } t_heredoc;
 
 
