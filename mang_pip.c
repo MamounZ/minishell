@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/02 09:48:07 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/02 11:07:12 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -536,6 +536,34 @@ void dad_thing(t_cmd *tmp, int *prev_fd, int fd[2])
         close(tmp->fd_out);
 }
 
+void fail_pipe(t_ms *ms, t_cmd *tmp, int prev_fd)
+{
+    perror("pipe");
+    if (tmp->fd_in != -1)
+        close(tmp->fd_in);
+    if (tmp->fd_out != -1)
+        close(tmp->fd_out);
+    if (prev_fd != -1)
+        close(prev_fd);
+    ft_free_ms(ms, 1);
+    exit(1);
+}
+
+void fail_fork(t_ms *ms, t_cmd *tmp, int prev_fd, int fd[2])
+{
+    perror("fork");
+    if (tmp->fd_in != -1)
+        close(tmp->fd_in);
+    if (tmp->fd_out != -1)
+        close(tmp->fd_out);
+    if (prev_fd != -1)
+        close(prev_fd);
+    close(fd[0]);
+    close(fd[1]);
+    ft_free_ms(ms, 1);
+    exit(1);
+}
+
 void exec_cmd(t_ms *ms)
 {
     t_cmd *tmp;
@@ -548,12 +576,11 @@ void exec_cmd(t_ms *ms)
     while (tmp)
     {
         if (tmp->next && pipe(fd) == -1)
-        {
-            perror("pipe");
-            exit(1);
-        }
+            fail_pipe(ms, tmp, prev_fd);
         signal(SIGINT, SIG_IGN);
         pid = fork();
+        if (pid == -1)
+            fail_fork(ms, tmp, prev_fd, fd);
         if (pid == 0 && tmp->it_is_ok == 0)
             it_is_not_ok(tmp, prev_fd, fd, ms);
         else if (pid == 0)
