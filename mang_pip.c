@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/02 11:07:12 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/02 12:29:09 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,7 @@ void add_cmd(t_ms *ms, t_cmd *cmd)
         tmp->next = cmd;
     }
 }
+
 int token_size(t_token *tmp)
 {
     int size = 0;
@@ -209,6 +210,14 @@ char	*expand_heredoc(char **argv, char *input, t_ms *ms)
 	return (expanded);
 }
 
+void exit_heredoc(t_ms *ms, char *line)
+{
+    perror("getline");
+    free(line);
+    ft_free_ms(ms, 1);
+    exit (1);
+}
+
 int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
 {
     char    *line;
@@ -216,12 +225,7 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
 
     line = readline("> ");
     if (!line && close(pipe_fd[0]) == 0 && close(pipe_fd[1]) == 0)
-    {
-        perror("getline");
-        free(line);
-        ft_free_ms(ms, 1);
-        exit (1);
-    }
+        exit_heredoc(ms, line);
     if (expand)
         new = expand_heredoc(NULL, line, ms);
     else
@@ -236,6 +240,42 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     free(new);
     free(line);
     return 1;
+}
+
+void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
+{
+    pid_t pid;
+    int wstatus;
+
+    signal(SIGINT, SIG_IGN);
+    pid = fork();
+    if (pid < 0)
+    {
+        perror("fork");
+        exit(1);
+    }
+    if (pid == 0)
+    {
+        /*signal(SIGINT, SIG_DFL);
+        signal(SIGQUIT, SIG_DFL); mamoon signal*/
+        while (heredoc_loop(tmp, pipe_fd, expand, ms))
+            ;
+        close(pipe_fd[1]);
+        close(pipe_fd[0]);
+        ft_free_ms(ms, 1);
+        exit (1);
+    }
+    else
+    {
+        wait(&wstatus);
+        if (WIFEXITED(wstatus))
+			ms->last_exit_status = WEXITSTATUS(wstatus);
+		else if (WIFSIGNALED(wstatus))
+			ms->last_exit_status = 128 + WTERMSIG(wstatus);
+        setup_signals();
+        close(pipe_fd[1]);
+        add_heredoc(ms, pipe_fd[0]);
+    }
 }
 
 void fill_here_doc(t_ms *ms)
@@ -258,10 +298,7 @@ void fill_here_doc(t_ms *ms)
                 ft_free_ms(ms, 1);
                 exit (1);
             }
-            while (heredoc_loop(tmp, pipe_fd, expand, ms))
-                ;
-            close(pipe_fd[1]);
-            add_heredoc(ms, pipe_fd[0]);
+            fork_heredoc(tmp, pipe_fd, expand, ms);
         }
         tmp = tmp->next;
     }
