@@ -6,22 +6,29 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/26 18:58:26 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/02 12:29:09 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void add_heredoc(t_heredoc **head, int fd)
+void add_heredoc(t_ms *ms, int fd)
 {
-    t_heredoc *new = malloc(sizeof(t_heredoc));
-    t_heredoc *tmp = *head;
+    t_heredoc *new;
+    t_heredoc *tmp;
 
+    new = malloc(sizeof(t_heredoc));
+    if (!new)
+    {
+        ft_free_ms(ms, 1);
+        exit (1);
+    }
+    tmp = ms->doc;
     new->fd = fd;
     new->n = NULL;
-    if (!(*head))
+    if (!(tmp))
     {
-        *head = new;
+        ms->doc = new;
         return ;
     }
     while(tmp->n)
@@ -47,12 +54,15 @@ int num_of_words(t_token *tmp)
     return (count - it_is);
 }
 
-t_cmd *create_cmd(t_token *tmp)
+t_cmd *create_cmd(t_token *tmp, t_ms *ms)
 {
     (void) tmp;
     t_cmd *cmd = malloc(sizeof(t_cmd));
     if (!cmd)
-        return (NULL);
+    {
+        ft_free_ms(ms, 1);
+        exit (1);
+    }
     cmd->args = NULL;
     cmd->path = NULL;
     cmd->fd_in = -1;
@@ -60,6 +70,20 @@ t_cmd *create_cmd(t_token *tmp)
     cmd->next = NULL;
     cmd->it_is_ok = 1;
     return (cmd);
+}
+
+void close_cmds(t_cmd *cmds)
+{
+    while (cmds)
+    {
+        if (cmds->fd_in != -1)
+            close(cmds->fd_in);
+        if (cmds->fd_out != -1)
+            close(cmds->fd_out);
+        cmds->fd_in = -1;
+        cmds->fd_out = -1;
+        cmds = cmds->next;
+    }
 }
 
 void add_cmd(t_ms *ms, t_cmd *cmd)
@@ -76,6 +100,7 @@ void add_cmd(t_ms *ms, t_cmd *cmd)
         tmp->next = cmd;
     }
 }
+
 int token_size(t_token *tmp)
 {
     int size = 0;
@@ -111,7 +136,7 @@ int rm_quote_c(char *str)
     while (str[i])
     {
         if ((str[i] == '\'' || str[i] == '\"') && !quote)
-            quote = str[i];
+        quote = str[i];
         else if (str[i] == quote)
             quote = 0;
         else
@@ -185,18 +210,22 @@ char	*expand_heredoc(char **argv, char *input, t_ms *ms)
 	return (expanded);
 }
 
+void exit_heredoc(t_ms *ms, char *line)
+{
+    perror("getline");
+    free(line);
+    ft_free_ms(ms, 1);
+    exit (1);
+}
+
 int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
 {
     char    *line;
     char    *new;
 
     line = readline("> ");
-    if (!line && close(pipe_fd[0]) && close(pipe_fd[1]))
-    {
-        perror("getline");
-        free(line);
-        return 0;
-    }
+    if (!line && close(pipe_fd[0]) == 0 && close(pipe_fd[1]) == 0)
+        exit_heredoc(ms, line);
     if (expand)
         new = expand_heredoc(NULL, line, ms);
     else
@@ -211,6 +240,42 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     free(new);
     free(line);
     return 1;
+}
+
+void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
+{
+    pid_t pid;
+    int wstatus;
+
+    signal(SIGINT, SIG_IGN);
+    pid = fork();
+    if (pid < 0)
+    {
+        perror("fork");
+        exit(1);
+    }
+    if (pid == 0)
+    {
+        /*signal(SIGINT, SIG_DFL);
+        signal(SIGQUIT, SIG_DFL); mamoon signal*/
+        while (heredoc_loop(tmp, pipe_fd, expand, ms))
+            ;
+        close(pipe_fd[1]);
+        close(pipe_fd[0]);
+        ft_free_ms(ms, 1);
+        exit (1);
+    }
+    else
+    {
+        wait(&wstatus);
+        if (WIFEXITED(wstatus))
+			ms->last_exit_status = WEXITSTATUS(wstatus);
+		else if (WIFSIGNALED(wstatus))
+			ms->last_exit_status = 128 + WTERMSIG(wstatus);
+        setup_signals();
+        close(pipe_fd[1]);
+        add_heredoc(ms, pipe_fd[0]);
+    }
 }
 
 void fill_here_doc(t_ms *ms)
@@ -230,12 +295,10 @@ void fill_here_doc(t_ms *ms)
             if (pipe(pipe_fd) == -1)
             {
                 perror("pipe");
-                break;
+                ft_free_ms(ms, 1);
+                exit (1);
             }
-            while (heredoc_loop(tmp, pipe_fd, expand, ms))
-                ;
-            close(pipe_fd[1]);
-            add_heredoc(&ms->doc, pipe_fd[0]);
+            fork_heredoc(tmp, pipe_fd, expand, ms);
         }
         tmp = tmp->next;
     }
@@ -284,7 +347,7 @@ int next_cmd(t_token **tm, t_cmd **cmd, t_ms *ms, t_token *tmp)
     free_tokens(*tm);
     *tm = NULL;
     if (tmp->type == PIPE)
-        *cmd = create_cmd(tmp->next);
+        *cmd = create_cmd(tmp->next, ms);
     return (1);
 }
 
@@ -314,7 +377,7 @@ void fill_cmds_file(t_ms *ms)
     tmp = ms->tokens;
     tm = NULL;
     t = ms->doc;
-    cmd = create_cmd(tmp);
+    cmd = create_cmd(tmp, ms);
     while (tmp)
     {
         if (tmp->type == REDIR_OUT || tmp->type == REDIR_IN || tmp->type == APPEND || tmp->type == HEREDOC)
@@ -323,7 +386,7 @@ void fill_cmds_file(t_ms *ms)
             tmp = tmp->next;
         }
         else if (tmp->type != PIPE)
-            add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type));
+            add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type), ms);
         if (tmp->type == PIPE || !tmp->next)
             next_cmd(&tm, &cmd, ms, tmp);
         tmp = tmp->next;
@@ -384,8 +447,8 @@ void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
 
     i = 0;
     input = tokenize_to_char(tm);
-    expanded_input = expand_variables(NULL, input, ms);
-    tmp = tokenize(expanded_input);
+    expanded_input = expand_variables(input, ms);
+    tmp = tokenize(expanded_input, ms);
     tmo = tmp;
     free(input);
     free(expanded_input);
@@ -423,36 +486,30 @@ void wait_all(pid_t pid, t_ms *ms)
 void in_out_cmds(t_cmd *tmp, int prev_fd, int fd[2])
 {
     if (tmp->fd_in != -1)
-    {
         dup2(tmp->fd_in, STDIN_FILENO);
-        close(tmp->fd_in);
-    }
     else if (prev_fd != -1)
-    {
         dup2(prev_fd, STDIN_FILENO);
-        close(prev_fd);
-    }
     if (tmp->fd_out != -1)
-    {
         dup2(tmp->fd_out, STDOUT_FILENO);
-        close(tmp->fd_out);
-    }
     else if (tmp->next)
+        dup2(fd[1], STDOUT_FILENO);
+    if (tmp->fd_in != -1)
+        close(tmp->fd_in);
+    if (tmp->fd_out != -1)
+        close (tmp->fd_out);
+    if (prev_fd != -1)
+        close (prev_fd);
+    if (tmp->next)
     {
         close(fd[0]);
-        dup2(fd[1], STDOUT_FILENO);
         close(fd[1]);
     }
 }
 
 void clean_child(t_cmd *tmp, int prev_fd, t_ms *ms)
 {
-    if (tmp->fd_in != -1)
-        close(tmp->fd_in);
-    if (tmp->fd_out != -1)
-        close(tmp->fd_out);
-    if (prev_fd != -1)
-        close(prev_fd);
+    (void) prev_fd;
+    close_cmds(tmp->next);
     ft_free_ms(ms, 1);
 }
 
@@ -460,6 +517,7 @@ void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
 {
     char *cmd;
 
+    close_cmds(tmp->next);
     if (tmp->args[0][0] == '/' || (tmp->args[0][0] == '.' && tmp->args[0][1] == '/'))
         cmd = ft_strdup(tmp->args[0]);
     else
@@ -473,8 +531,7 @@ void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
 
 void it_is_not_ok(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
 {
-    if (tmp->next && close(fd[0]) == 0)
-        close(fd[1]);
+    in_out_cmds(tmp, prev_fd, fd);
     clean_child(tmp, prev_fd, ms);
     exit(1);
 }
@@ -486,8 +543,6 @@ void it_is_okay(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
     signal(SIGQUIT, SIG_DFL);
     if ((!tmp || !tmp->args || !tmp->args[0]))
     {
-        if (tmp->next && close(fd[0]))
-             close(fd[1]);
         clean_child(tmp, prev_fd, ms);
         exit(1);
     }
@@ -518,6 +573,34 @@ void dad_thing(t_cmd *tmp, int *prev_fd, int fd[2])
         close(tmp->fd_out);
 }
 
+void fail_pipe(t_ms *ms, t_cmd *tmp, int prev_fd)
+{
+    perror("pipe");
+    if (tmp->fd_in != -1)
+        close(tmp->fd_in);
+    if (tmp->fd_out != -1)
+        close(tmp->fd_out);
+    if (prev_fd != -1)
+        close(prev_fd);
+    ft_free_ms(ms, 1);
+    exit(1);
+}
+
+void fail_fork(t_ms *ms, t_cmd *tmp, int prev_fd, int fd[2])
+{
+    perror("fork");
+    if (tmp->fd_in != -1)
+        close(tmp->fd_in);
+    if (tmp->fd_out != -1)
+        close(tmp->fd_out);
+    if (prev_fd != -1)
+        close(prev_fd);
+    close(fd[0]);
+    close(fd[1]);
+    ft_free_ms(ms, 1);
+    exit(1);
+}
+
 void exec_cmd(t_ms *ms)
 {
     t_cmd *tmp;
@@ -530,12 +613,11 @@ void exec_cmd(t_ms *ms)
     while (tmp)
     {
         if (tmp->next && pipe(fd) == -1)
-        {
-            perror("pipe");
-            exit(1);
-        }
+            fail_pipe(ms, tmp, prev_fd);
         signal(SIGINT, SIG_IGN);
         pid = fork();
+        if (pid == -1)
+            fail_fork(ms, tmp, prev_fd, fd);
         if (pid == 0 && tmp->it_is_ok == 0)
             it_is_not_ok(tmp, prev_fd, fd, ms);
         else if (pid == 0)
@@ -558,3 +640,4 @@ void free_cmds(t_cmd *cmds)
         free(tmp);
     }
 }
+
