@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/01 22:57:11 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/02 09:48:19 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 extern int g_signal;
 
 typedef enum e_token_type {
-    WORD, PIPE, REDIR_IN, REDIR_OUT, HEREDOC, APPEND
+    WORD, PIPE, REDIR_IN, REDIR_OUT, HEREDOC, APPEND, FAIL
 } t_token_type;
 
 typedef struct s_token {
@@ -61,6 +61,7 @@ typedef struct s_ms
     t_heredoc *doc;
     char    **argv;
     int     last_exit_status;
+    int     err;
 }		t_ms;
 
 typedef struct s_expand
@@ -94,10 +95,10 @@ void add_to_env(char *arg, t_ms *ms);
 void ft_cd(char **args, t_ms *ms);
 char **realloc_env(char **envp, char *new_var);
 void setup_signals(void);
-t_token *tokenize(char *input);
+t_token *tokenize(char *input, t_ms *ms);
 void print_tokens(t_token *tokens);
 t_token *new_token(char *value, t_token_type type);
-void add_token(t_token **tokens, t_token *new_token);
+int add_token(t_token **tokens, t_token *new_token, t_ms *ms);
 void free_tokens(t_token *tokens);
 int check_token(t_ms *ms);
 void execute_command(t_ms *ms);

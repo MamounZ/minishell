@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/01 22:57:01 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/02 09:46:08 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,25 @@ char *ft_getenv(char *var, t_ms *ms)
 	return (NULL);
 }
 
+static void len_copy_value(t_expand *e, int *size)
+{
+	int z;
+
+	z = 0;
+	while (e->value[z])
+	{
+		if (e->value[z] == '\"' && !e->in_double_quotes)
+			*size += 3;
+		else if (e->value[z] == '\"' && e->in_double_quotes)
+			*size += 5;
+		else if (e->value[z] == '\'' && !e->in_double_quotes)
+			*size += 3;
+		else
+			*size += 1;
+		z++;
+	}
+}
+
 static void copy_value(t_expand *e)
 {
 	int z;
@@ -87,6 +106,22 @@ int handle_quotes(char *input, t_expand *e)
 	}
 	return (0);
 }
+
+int len_handle_quotes(char *input, t_expand *e)
+{
+	if (input[e->i] == '\'' && !e->in_double_quotes)
+	{
+		e->in_single_quotes = !e->in_single_quotes;
+		return (1);
+	}
+	else if (input[e->i] == '\"' && !e->in_single_quotes)
+	{
+		e->in_double_quotes = !e->in_double_quotes;
+		return (1);
+	}
+	return (0);
+}
+
 int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 {
 	if (input[e->i] == '0')
@@ -110,6 +145,45 @@ int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 	}
 	return (0);
 }
+
+int len_handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms, int *size)
+{
+	if (input[e->i] == '0')
+	{
+		e->i++;
+		(*size)++;
+		return (1);
+	}
+	else if (input[e->i] >= '1' && input[e->i] <= '9')
+	{
+		e->i++;
+		return (1);
+	}
+	else if (input[e->i] == '?')
+	{
+		*size += ft_strlen(ft_itoa(ms->last_exit_status)); // yaman -> do ft_numlen
+		e->i++;
+		return (1);
+	}
+	return (0);
+}
+
+int len_handle_variable_expansion(char *input, t_expand *e, t_ms *ms, int *size)
+{
+	if (is_valid_var_char(input[e->i]))
+	{
+		e->j = 0;
+		while (is_valid_var_char(input[e->i]))
+			e->var_name[e->j++] = input[e->i++];
+		e->var_name[e->j] = '\0';
+		e->value = ft_getenv(e->var_name, ms);
+		if (e->value)
+			len_copy_value(e, size);
+		ft_memset(e->var_name, 0, sizeof(e->var_name));
+		return (1);
+	}
+	return (0);
+}
 int handle_variable_expansion(char *input, t_expand *e, t_ms *ms)
 {
 	if (is_valid_var_char(input[e->i]))
@@ -126,6 +200,26 @@ int handle_variable_expansion(char *input, t_expand *e, t_ms *ms)
 	}
 	return (0);
 }
+
+int len_handle_unknown_dollar(char *input, t_expand *e)
+{
+	int size;
+	size = 0;
+	if (e->in_double_quotes && (input[e->i] == '\'' || input[e->i] == '\"'))
+	{
+		return (1);
+	}
+	if (input[e->i] == '\'' || input[e->i] == '\"')
+		return (0);
+	size++;
+	if (input[e->i])
+	{
+		size++;
+		e->i++;
+	}
+	return (size);
+}
+
 void handle_unknown_dollar(char *input, t_expand *e)
 {
 	if (e->in_double_quotes && (input[e->i] == '\'' || input[e->i] == '\"'))
@@ -147,12 +241,42 @@ void initiate_exp_variables(t_expand *e)
 	e->in_double_quotes = 0;
 }
 
+int ft_lenexpand(char *input, t_ms *ms)
+{
+	t_expand e;
+	int size;
+
+	size = 0;
+	initiate_exp_variables(&e);
+	while (input[e.i])
+	{
+		if (len_handle_quotes(input, &e))
+			size++;
+		if (input[e.i] == '$' && input[e.i + 1] && !e.in_single_quotes)
+		{
+			e.i++;
+			if (len_handle_special_dollar_cases(input, &e, ms, &size))
+				continue;
+			if (len_handle_variable_expansion(input, &e, ms, &size))
+				continue;
+			len_handle_unknown_dollar(input, &e);
+			continue;
+		}
+		else
+		{
+			size++;
+			e.i++;
+		}
+	}
+	return (size);
+}
+
 char *expand_variables(char *input, t_ms *ms)
 {
 	t_expand e;
 
 	initiate_exp_variables(&e);
-	e.expanded = malloc(10000);
+	e.expanded = malloc(ft_lenexpand(input, ms) + 1);
 	if (!e.expanded)
 		return (NULL);
 	e.expanded[0] = '\0';

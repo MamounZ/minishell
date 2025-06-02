@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   envp_copy.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 18:13:34 by mazaid            #+#    #+#             */
-/*   Updated: 2025/02/27 21:26:52 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/05/30 09:20:24 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,10 @@ void	copy_env(char **envp, t_ms *ms)
 	count = count_env_vars(envp);
 	ms->envp_cpy = malloc((count + 1) * sizeof(char *));
 	if (!ms->envp_cpy)
-		return ;
+	{
+		free(ms);
+		exit (1);
+	}
 	i = 0;
 	while (i < count)
 	{
