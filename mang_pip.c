@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/03 15:57:42 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/03 17:06:22 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,11 +242,23 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     return 1;
 }
 
+void close_and_free_heredoc(t_ms *ms)
+{
+    t_heredoc *tmp;
+
+    tmp = ms->doc;
+    while (tmp)
+    {
+        close(tmp->fd);
+        tmp = tmp->n;
+    }
+    free_doc(ms->doc);
+    ms->doc = NULL;
+}
+
 void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
 {
     pid_t pid;
-    // int old_globle = g_signal;
-    // int wstatus = 0;
 
     signal(SIGINT, SIG_IGN);
     pid = fork();
@@ -272,12 +284,14 @@ void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
             ms->last_exit_status = WEXITSTATUS(status);
         else if (WIFSIGNALED(status))
             ms->last_exit_status = 128 + WTERMSIG(status);
-        if (ms->last_exit_status == 130)
-            g_signal = 1;
-        
-        setup_signals();
         close(pipe_fd[1]);
+        setup_signals();
         add_heredoc(ms, pipe_fd[0]);
+        if (ms->last_exit_status == 130)
+        {
+            ms->err = 1;
+            close_and_free_heredoc(ms);
+        }
     }
 }
 
@@ -302,6 +316,8 @@ void fill_here_doc(t_ms *ms)
                 exit (1);
             }
             fork_heredoc(tmp, pipe_fd, expand, ms);
+            if (ms->err)
+                return;
         }
         tmp = tmp->next;
     }
@@ -377,6 +393,8 @@ void fill_cmds_file(t_ms *ms)
     t_heredoc *t;
 
     fill_here_doc(ms);
+    if (ms->err)
+        return ;
     tmp = ms->tokens;
     tm = NULL;
     t = ms->doc;
