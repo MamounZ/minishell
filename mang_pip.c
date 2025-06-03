@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/03 17:06:22 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/03 21:16:05 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,10 +217,8 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     char    *new;
 
     line = readline("> ");
-    if (g_signal)
+    if (g_signal && close(pipe_fd[0]) == 0 && close(pipe_fd[1]) == 0)
     {
-        close(pipe_fd[0]);
-        close(pipe_fd[1]);
         ft_free_ms(ms, 1);
         exit(130);
     }
@@ -256,6 +254,25 @@ void close_and_free_heredoc(t_ms *ms)
     ms->doc = NULL;
 }
 
+void dad_heredoc_thing(int pipe_fd[2], t_ms *ms)
+{
+    int status;
+    
+    waitpid(-1, &status, 0);
+    if (WIFEXITED(status))
+        ms->last_exit_status = WEXITSTATUS(status);
+    else if (WIFSIGNALED(status))
+        ms->last_exit_status = 128 + WTERMSIG(status);
+    close(pipe_fd[1]);
+    setup_signals();
+    add_heredoc(ms, pipe_fd[0]);
+    if (ms->last_exit_status == 130)
+    {
+        ms->err = 1;
+        close_and_free_heredoc(ms);
+    }
+}
+
 void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
 {
     pid_t pid;
@@ -277,22 +294,7 @@ void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
         exit (0);
     }
     else
-    {
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status))
-            ms->last_exit_status = WEXITSTATUS(status);
-        else if (WIFSIGNALED(status))
-            ms->last_exit_status = 128 + WTERMSIG(status);
-        close(pipe_fd[1]);
-        setup_signals();
-        add_heredoc(ms, pipe_fd[0]);
-        if (ms->last_exit_status == 130)
-        {
-            ms->err = 1;
-            close_and_free_heredoc(ms);
-        }
-    }
+        dad_heredoc_thing(pipe_fd, ms);
 }
 
 void fill_here_doc(t_ms *ms)
@@ -406,8 +408,12 @@ void fill_cmds_file(t_ms *ms)
             find_in_or_out(tmp, cmd, &t);
             tmp = tmp->next;
         }
-        else if (tmp->type != PIPE)
-            add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type), ms);
+        else if (tmp->type != PIPE && add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type), ms) == 0)
+        {
+            free_cmds(cmd);
+            ft_free_ms(ms, 1);
+            exit(1);
+        }
         if (tmp->type == PIPE || !tmp->next)
             next_cmd(&tm, &cmd, ms, tmp);
         tmp = tmp->next;
