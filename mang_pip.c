@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   mang_pip.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/02 20:22:43 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/03 15:57:42 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,13 @@ t_cmd *create_cmd(t_token *tmp, t_ms *ms)
     cmd->next = NULL;
     cmd->it_is_ok = 1;
     return (cmd);
+}
+void fail_expander(char *input, t_ms *ms)
+{
+    ft_printf("minishell: syntax error near unexpected token `%s'\n", input);
+    free(input);
+    ft_free_ms(ms, 1);
+    exit(1);
 }
 
 void close_cmds(t_cmd *cmds)
@@ -433,29 +440,45 @@ char *dup_token(t_token *tmp)
         return (ft_strdup(tmp->value));
 }
 
+void fill_cmds_args(char **args, t_token *tm, t_ms *ms)
+{
+    int i;
+    t_token *tmp;
+
+    if (!args)
+    {
+        free_tokens(tm);
+        ft_free_ms(ms, 1);
+        exit(1);
+    }
+    i = 0;
+    tmp = tm;
+    while (tmp)
+    {
+        args[i++] = dup_token(tmp);
+        tmp = tmp->next;
+    }
+    args[i] = NULL;
+}
+
 void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
 {
     t_token *tmp;
     t_token *tmo;
-    int i;
     char *input;
     char *expanded_input;
 
-    i = 0;
     input = tokenize_to_char(tm);
     expanded_input = expand_variables(input, ms);
+    if (!expanded_input)
+        fail_expander(input, ms);
     tmp = tokenize(expanded_input, ms);
     tmo = tmp;
     free(input);
     free(expanded_input);
     rm_quote(tmp);
     cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));
-    while (tmp)
-    {
-        cmd->args[i++] = dup_token(tmp);
-        tmp = tmp->next;
-    }
-    cmd->args[i] = NULL;
+    fill_cmds_args(cmd->args, tmp, ms);
     free_tokens(tmo);
 }
 
