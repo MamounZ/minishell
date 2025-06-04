@@ -3,14 +3,88 @@
 /*                                                        :::      ::::::::   */
 /*   mang_pip.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/02 20:22:43 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/04 17:06:05 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+int len_handle_special_dollar_cases_here(char *input, t_expand *e, t_ms *ms)
+{
+	if (input[e->i] == '0')
+	{
+		e->size += ft_strlen(ms->argv[0]);
+		e->i++;
+		return (1);
+	}
+	else if (input[e->i] >= '1' && input[e->i] <= '9')
+	{
+		e->i++;
+		return (1);
+	}
+	else if (input[e->i] == '?')
+	{
+		e->exit_status = ft_itoa(ms->last_exit_status);
+        e->size += ft_strlen(e->exit_status);
+		free(e->exit_status);
+		e->i++;
+		return (1);
+	}
+	return (0);
+}
+
+int len_handle_variable_expansion_heredoc(char *input, t_expand *e, t_ms *ms)
+{
+    if (is_valid_var_char(input[e->i]))
+    {
+        e->j = 0;
+        while (is_valid_var_char(input[e->i]))
+            e->var_name[e->j++] = input[e->i++];
+        e->var_name[e->j] = '\0';
+        e->value = ft_getenv(e->var_name, ms);
+        if (e->value)
+            e->size += ft_strlen(e->value);
+        ft_memset(e->var_name, 0, sizeof(e->var_name));
+        return (1);
+    }
+    return (0);
+}
+
+void len_handle_plain_dollar(char *input, t_expand *e)
+{
+    e->size++;
+    if (input[e->i])
+    {
+        e->size++;
+        e->i++;
+    }
+}
+
+int len_heredoc_exp(t_expand *e, char *input, t_ms *ms)
+{
+    while (input[e->i])
+    {
+        if (input[e->i] == '$' && input[e->i + 1])
+        {
+            e->i++;
+            if (len_handle_special_dollar_cases_here(input, e, ms))
+                continue;
+            if (len_handle_variable_expansion_heredoc(input, e, ms))
+                continue;
+            len_handle_plain_dollar(input, e);
+        }
+        else
+        {
+            e->size++;
+            e->i++;
+        }
+    }
+    e->i = 0;
+    return (e->size);
+}
 
 void add_heredoc(t_ms *ms, int fd)
 {
@@ -70,6 +144,13 @@ t_cmd *create_cmd(t_token *tmp, t_ms *ms)
     cmd->next = NULL;
     cmd->it_is_ok = 1;
     return (cmd);
+}
+void fail_expander(char *input, t_ms *ms)
+{
+    ft_printf("minishell: syntax error near unexpected token `%s'\n", input);
+    free(input);
+    ft_free_ms(ms, 1);
+    exit(1);
 }
 
 void close_cmds(t_cmd *cmds)
@@ -175,7 +256,7 @@ char	*expand_heredoc(char *input, t_ms *ms)
     t_expand e;
 
     ft_bzero(&e, sizeof(e));
-    e.expanded = malloc(10000);
+    e.expanded = malloc(len_heredoc_exp(&e, input, ms) + 1);
     if (!e.expanded)
         return NULL;
     e.expanded[0] = '\0';
@@ -196,10 +277,26 @@ char	*expand_heredoc(char *input, t_ms *ms)
 	return (e.expanded);
 }
 
-void exit_heredoc(t_ms *ms, char *line)
+void close_and_free_heredoc(t_ms *ms)
 {
+    t_heredoc *tmp;
+
+    tmp = ms->doc;
+    while (tmp)
+    {
+        close(tmp->fd);
+        tmp = tmp->n;
+    }
+    free_doc(ms->doc);
+    ms->doc = NULL;
+}
+
+void exit_heredoc(t_ms *ms, char *line, int fd)
+{
+    close(fd);
     perror("getline");
     free(line);
+    close_and_free_heredoc(ms);
     ft_free_ms(ms, 1);
     exit (1);
 }
@@ -210,20 +307,18 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     char    *new;
 
     line = readline("> ");
-    if (g_signal)
+    if (g_signal&& close(pipe_fd[1]) == 0)
     {
-        close(pipe_fd[0]);
-        close(pipe_fd[1]);
         ft_free_ms(ms, 1);
         exit(130);
     }
-    if (!line && close(pipe_fd[0]) == 0 && close(pipe_fd[1]) == 0)
-        exit_heredoc(ms, line);
+    if (!line)
+        exit_heredoc(ms, line, pipe_fd[1]);
     if (expand)
         new = expand_heredoc(line, ms);
     else
         new = ft_strdup(line);
-    if (ft_strcmp(line, tmp->next->value) == 0)
+    if (ft_strcmp(line, tmp->next->value) == 0 && close(pipe_fd[1]) == 0)
     {
         free(new);
         return 0;
@@ -235,11 +330,28 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     return 1;
 }
 
+
+void dad_heredoc_thing(int pipe_fd, t_ms *ms)
+{
+    int status;
+    
+    waitpid(-1, &status, 0);
+    if (WIFEXITED(status))
+        ms->last_exit_status = WEXITSTATUS(status);
+    else if (WIFSIGNALED(status))
+        ms->last_exit_status = 128 + WTERMSIG(status);
+    setup_signals();
+    add_heredoc(ms, pipe_fd);
+    if (ms->last_exit_status == 130)
+    {
+        ms->err = 1;
+        close_and_free_heredoc(ms);
+    }
+}
+
 void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
 {
     pid_t pid;
-    // int old_globle = g_signal;
-    // int wstatus = 0;
 
     signal(SIGINT, SIG_IGN);
     pid = fork();
@@ -250,27 +362,18 @@ void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     }
     if (pid == 0)
     {
-        setup_heredoc_signals(); /*mamoon signal*/
-            while (heredoc_loop(tmp, pipe_fd, expand, ms));
-        close(pipe_fd[1]);
         close(pipe_fd[0]);
+        setup_heredoc_signals(); /*mamoon signal*/
+        while (heredoc_loop(tmp, pipe_fd, expand, ms))
+            ;
+        close_and_free_heredoc(ms);
         ft_free_ms(ms, 1);
         exit (0);
     }
     else
     {
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status))
-            ms->last_exit_status = WEXITSTATUS(status);
-        else if (WIFSIGNALED(status))
-            ms->last_exit_status = 128 + WTERMSIG(status);
-        if (ms->last_exit_status == 130)
-            g_signal = 1;
-        
-        setup_signals();
         close(pipe_fd[1]);
-        add_heredoc(ms, pipe_fd[0]);
+        dad_heredoc_thing(pipe_fd[0], ms);
     }
 }
 
@@ -295,6 +398,8 @@ void fill_here_doc(t_ms *ms)
                 exit (1);
             }
             fork_heredoc(tmp, pipe_fd, expand, ms);
+            if (ms->err)
+                return;
         }
         tmp = tmp->next;
     }
@@ -357,11 +462,19 @@ void find_in_or_out(t_token *tmp, t_cmd *cmd, t_heredoc **t)
         open_append(tmp, cmd);
     else if (tmp->type == HEREDOC)
     {
+        if (cmd->fd_in != -1)
+            close(cmd->fd_in);
         cmd->fd_in = (*t)->fd;
         *t = (*t)->n;
     }
 }
 
+void cmd_error(t_cmd *cmd, t_ms *ms)
+{
+    free_cmds(cmd);
+    ft_free_ms(ms, 1);
+    exit(1);
+}
 void fill_cmds_file(t_ms *ms)
 {
     t_token *tmp;
@@ -370,6 +483,8 @@ void fill_cmds_file(t_ms *ms)
     t_heredoc *t;
 
     fill_here_doc(ms);
+    if (ms->err)
+        return ;
     tmp = ms->tokens;
     tm = NULL;
     t = ms->doc;
@@ -381,8 +496,8 @@ void fill_cmds_file(t_ms *ms)
             find_in_or_out(tmp, cmd, &t);
             tmp = tmp->next;
         }
-        else if (tmp->type != PIPE)
-            add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type), ms);
+        else if (tmp->type != PIPE && add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type), ms) == 0)
+            cmd_error(cmd, ms);
         if (tmp->type == PIPE || !tmp->next)
             next_cmd(&tm, &cmd, ms, tmp);
         tmp = tmp->next;
@@ -433,29 +548,45 @@ char *dup_token(t_token *tmp)
         return (ft_strdup(tmp->value));
 }
 
+void fill_cmds_args(char **args, t_token *tm, t_ms *ms)
+{
+    int i;
+    t_token *tmp;
+
+    if (!args)
+    {
+        free_tokens(tm);
+        ft_free_ms(ms, 1);
+        exit(1);
+    }
+    i = 0;
+    tmp = tm;
+    while (tmp)
+    {
+        args[i++] = dup_token(tmp);
+        tmp = tmp->next;
+    }
+    args[i] = NULL;
+}
+
 void fill_cmds(t_cmd *cmd, t_token *tm, t_ms *ms)
 {
     t_token *tmp;
     t_token *tmo;
-    int i;
     char *input;
     char *expanded_input;
 
-    i = 0;
     input = tokenize_to_char(tm);
     expanded_input = expand_variables(input, ms);
+    if (!expanded_input)
+        fail_expander(input, ms);
     tmp = tokenize(expanded_input, ms);
     tmo = tmp;
     free(input);
     free(expanded_input);
     rm_quote(tmp);
     cmd->args = malloc(sizeof(char *) * (token_size(tmp) + 1));
-    while (tmp)
-    {
-        cmd->args[i++] = dup_token(tmp);
-        tmp = tmp->next;
-    }
-    cmd->args[i] = NULL;
+    fill_cmds_args(cmd->args, tmp, ms);
     free_tokens(tmo);
 }
 

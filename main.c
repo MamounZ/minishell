@@ -173,12 +173,18 @@ int main(int argc, char **argv, char **envp)
 	{
 		if (token_alloc_good(ms) && check_token(ms))
 			return (1);
-		fill_cmds_file(ms);
-		if (ms && ms->cmds && !ms->cmds->next && ms->cmds->args && ms->cmds->args[0] && (!ft_strcmp(ms->cmds->args[0], "cd") || !ft_strcmp(ms->cmds->args[0], "export") ||
-    		!ft_strcmp(ms->cmds->args[0], "unset") || !ft_strcmp(ms->cmds->args[0], "exit")) && ms->cmds->it_is_ok)
-        	execute_builtin(ms->cmds->args, ms);
-		else
-			exec_cmd(ms);
+		if (ms->tokens)
+		{
+			fill_cmds_file(ms);
+			if (ms->err == 0)
+			{
+				if (ms && ms->cmds && !ms->cmds->next && ms->cmds->args && ms->cmds->args[0] && (!ft_strcmp(ms->cmds->args[0], "cd") || !ft_strcmp(ms->cmds->args[0], "export") ||
+    				!ft_strcmp(ms->cmds->args[0], "unset") || !ft_strcmp(ms->cmds->args[0], "exit")) && ms->cmds->it_is_ok)
+        			execute_builtin(ms->cmds->args, ms);
+				else if (ms)
+					exec_cmd(ms);
+			}
+		}
 		ft_free_ms(ms, 0);
 	}
 	exit_status = ms->last_exit_status;

@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
 /*   Updated: 2025/06/04 18:56:00 by mazaid           ###   ########.fr       */
@@ -148,6 +148,7 @@ int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 
 int len_handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 {
+	char *exit_status;
 	if (input[e->i] == '0')
 	{
 		e->i++;
@@ -161,7 +162,9 @@ int len_handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 	}
 	else if (input[e->i] == '?')
 	{
-		e->size += ft_strlen(ft_itoa(ms->last_exit_status)); // yaman -> do ft_numlen
+		exit_status = ft_itoa(ms->last_exit_status);
+		e->size += ft_strlen(exit_status); // yaman -> do ft_numlen
+		free(exit_status);
 		e->i++;
 		return (1);
 	}
