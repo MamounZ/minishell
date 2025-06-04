@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 00:42:24 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/25 12:28:52 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/04 16:56:47 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,6 @@ char **realloc_env(char **env, char *new_entry)
 
 	while (env[i])
 		i++;
-
 	new_env = malloc(sizeof(char *) * (i + 2));
 	if (!new_env)
 		return NULL;
@@ -110,51 +109,6 @@ void print_exported_vars(char **envp)
 	}
 }
 
-/* Validate all arguments before modhiifying envp_cpy */
-int validate_all_args(char **args)
-{
-	int i = 1;
-	char *name;
-	char *equal_sign;
-
-	while (args[i])
-	{
-		equal_sign = ft_strchr(args[i], '=');
-		// Handle cases like "export a", "export a="
-		if (equal_sign)
-			name = ft_substr(args[i], 0, equal_sign - args[i]); // Extract variable name
-		else
-			name = ft_strdup(args[i]); // Case: "export a"
-		ft_printf("name is %sb\n", name);
-		// Check if the variable name is valid
-		if (!is_valid_identifier(name))
-		{
-			ft_printf("minishell: export: `%s': not a valid identifier\n", args[i]);
-			free(name);
-			return (0); // Return failure
-		}
-		// Handle invalid cases like "export a =mamoun" or "export a= mamoun"
-		if (equal_sign)
-		{
-			// Check if there is an unexpected space before or after '='
-			if (equal_sign > args[i] && (*(equal_sign - 1) == ' ' || (equal_sign[1] == ' ')))
-			{
-				ft_printf("minishell: export: `%s': not a valid assignment\n", args[i]);
-				free(name);
-				return (0);
-			}
-		}
-		else
-		{
-			ft_printf("hi\n");
-			return (0);
-		}
-		free(name);
-		i++;
-	}
-	return (1); // Return success
-}
-
 /* Add or update a variable in the environment */
 
 void update_env(t_ms *ms, char *var, char *value)
@@ -212,46 +166,92 @@ void update_env(t_ms *ms, char *var, char *value)
 // 	free(name);
 // }
 
-/* Export command implementation */
+static void handle_export_assignment(char *arg, t_ms *ms)
+{
+	char *equal_sign = ft_strchr(arg, '=');
+	char *var = ft_substr(arg, 0, equal_sign - arg);
+	char *value = ft_strdup(equal_sign + 1);
+
+	if (is_valid_identifier(var))
+		update_env(ms, var, value);
+	else
+	{
+		ms->last_exit_status = 1;
+		printf("minishell: export: `%s': not a valid identifier\n", arg);
+	}
+	free(var);
+	free(value);
+}
+
+static void handle_export_argument(char *arg, t_ms *ms)
+{
+	if (ft_strchr(arg, '='))
+		handle_export_assignment(arg, ms);
+	else if (!is_valid_identifier(arg))
+	{
+		ms->last_exit_status = 1;
+		printf("minishell: export: `%s': not a valid identifier\n", arg);
+	}
+	// If valid with no '=', do nothing
+}
+
 void ft_export(char **args, t_ms *ms)
 {
-	int i = 1; // Start from the first argument after "export"
+	int i = 1;
 
-	if (!args[1]) // No arguments: print all env vars
+	if (!args[1])
 	{
 		for (int j = 0; ms->envp_cpy[j]; j++)
 			printf("declare -x %s\n", ms->envp_cpy[j]);
 		return;
 	}
-
 	while (args[i])
 	{
-		char *equal_sign = ft_strchr(args[i], '=');
-		if (equal_sign) // Case: VAR=value
-		{
-			char *var = ft_substr(args[i], 0, equal_sign - args[i]); // Get variable name
-			char *value = ft_strdup(equal_sign + 1);				 // Get value
-
-			if (is_valid_identifier(var))
-				update_env(ms, var, value);
-			else
-			{
-				ms->last_exit_status = 1;
-				printf("minishell: export: `%s': not a valid identifier\n", args[i]);
-			}
-
-			free(var);
-			free(value);
-		}
-		else // Case: Only VAR (no = sign)
-		{
-			if (!is_valid_identifier(args[i])) // Invalid identifier
-			{
-				ms->last_exit_status = 1;
-				printf("minishell: export: `%s': not a valid identifier\n", args[i]);
-			}
-			// If valid, do nothing (as per your method)
-		}
+		handle_export_argument(args[i], ms);
 		i++;
 	}
 }
+
+/* Export command implementation */
+// void ft_export(char **args, t_ms *ms)
+// {
+// 	int i = 1; // Start from the first argument after "export"
+
+// 	if (!args[1]) // No arguments: print all env vars
+// 	{
+// 		for (int j = 0; ms->envp_cpy[j]; j++)
+// 			printf("declare -x %s\n", ms->envp_cpy[j]);
+// 		return;
+// 	}
+
+// 	while (args[i])
+// 	{
+// 		char *equal_sign = ft_strchr(args[i], '=');
+// 		if (equal_sign) // Case: VAR=value
+// 		{
+// 			char *var = ft_substr(args[i], 0, equal_sign - args[i]); // Get variable name
+// 			char *value = ft_strdup(equal_sign + 1);				 // Get value
+
+// 			if (is_valid_identifier(var))
+// 				update_env(ms, var, value);
+// 			else
+// 			{
+// 				ms->last_exit_status = 1;
+// 				printf("minishell: export: `%s': not a valid identifier\n", args[i]);
+// 			}
+
+// 			free(var);
+// 			free(value);
+// 		}
+// 		else // Case: Only VAR (no = sign)
+// 		{
+// 			if (!is_valid_identifier(args[i])) // Invalid identifier
+// 			{
+// 				ms->last_exit_status = 1;
+// 				printf("minishell: export: `%s': not a valid identifier\n", args[i]);
+// 			}
+// 			// If valid, do nothing (as per your method)
+// 		}
+// 		i++;
+// 	}
+// }
