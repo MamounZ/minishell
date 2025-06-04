@@ -5,6 +5,11 @@
         "cstdlib": "c",
         "libft.h": "c",
         "ft_printf.h": "c",
-        "get_next_line.h": "c"
+        "get_next_line.h": "c",
+        "array": "c",
+        "string_view": "c",
+        "format": "c",
+        "initializer_list": "c",
+        "span": "c"
     }
 }

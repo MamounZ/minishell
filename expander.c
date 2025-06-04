@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/04 13:57:35 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/04 18:56:00 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -261,7 +261,7 @@ int ft_lenexpand(char *input, t_ms *ms)
 				continue;
 			if (len_handle_variable_expansion(input, &e, ms))
 				continue;
-			len_handle_unknown_dollar(input, &e);
+			e.size += len_handle_unknown_dollar(input, &e);
 			continue;
 		}
 		else
