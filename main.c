@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/03 19:55:51 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/04 18:11:59 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,14 +173,17 @@ int main(int argc, char **argv, char **envp)
 	{
 		if (token_alloc_good(ms) && check_token(ms))
 			return (1);
-		fill_cmds_file(ms);
-		if (ms->err == 0)
+		if (ms->tokens)
 		{
-			if (ms && ms->cmds && !ms->cmds->next && ms->cmds->args && ms->cmds->args[0] && (!ft_strcmp(ms->cmds->args[0], "cd") || !ft_strcmp(ms->cmds->args[0], "export") ||
-    			!ft_strcmp(ms->cmds->args[0], "unset") || !ft_strcmp(ms->cmds->args[0], "exit")) && ms->cmds->it_is_ok)
-        		execute_builtin(ms->cmds->args, ms);
-			else if (ms)
-				exec_cmd(ms);
+			fill_cmds_file(ms);
+			if (ms->err == 0)
+			{
+				if (ms && ms->cmds && !ms->cmds->next && ms->cmds->args && ms->cmds->args[0] && (!ft_strcmp(ms->cmds->args[0], "cd") || !ft_strcmp(ms->cmds->args[0], "export") ||
+    				!ft_strcmp(ms->cmds->args[0], "unset") || !ft_strcmp(ms->cmds->args[0], "exit")) && ms->cmds->it_is_ok)
+        			execute_builtin(ms->cmds->args, ms);
+				else if (ms)
+					exec_cmd(ms);
+			}
 		}
 		ft_free_ms(ms, 0);
 	}
