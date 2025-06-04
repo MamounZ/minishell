@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/04 13:47:14 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/04 17:06:05 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -277,43 +277,6 @@ char	*expand_heredoc(char *input, t_ms *ms)
 	return (e.expanded);
 }
 
-void exit_heredoc(t_ms *ms, char *line)
-{
-    perror("getline");
-    free(line);
-    ft_free_ms(ms, 1);
-    exit (1);
-}
-
-int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
-{
-    char    *line;
-    char    *new;
-
-    line = readline("> ");
-    if (g_signal && close(pipe_fd[0]) == 0 && close(pipe_fd[1]) == 0)
-    {
-        ft_free_ms(ms, 1);
-        exit(130);
-    }
-    if (!line && close(pipe_fd[0]) == 0 && close(pipe_fd[1]) == 0)
-        exit_heredoc(ms, line);
-    if (expand)
-        new = expand_heredoc(line, ms);
-    else
-        new = ft_strdup(line);
-    if (ft_strcmp(line, tmp->next->value) == 0)
-    {
-        free(new);
-        return 0;
-    }
-    write(pipe_fd[1], new, ft_strlen(new));
-    write(pipe_fd[1], "\n", 1);
-    free(new);
-    free(line);
-    return 1;
-}
-
 void close_and_free_heredoc(t_ms *ms)
 {
     t_heredoc *tmp;
@@ -328,7 +291,47 @@ void close_and_free_heredoc(t_ms *ms)
     ms->doc = NULL;
 }
 
-void dad_heredoc_thing(int pipe_fd[2], t_ms *ms)
+void exit_heredoc(t_ms *ms, char *line, int fd)
+{
+    close(fd);
+    perror("getline");
+    free(line);
+    close_and_free_heredoc(ms);
+    ft_free_ms(ms, 1);
+    exit (1);
+}
+
+int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
+{
+    char    *line;
+    char    *new;
+
+    line = readline("> ");
+    if (g_signal&& close(pipe_fd[1]) == 0)
+    {
+        ft_free_ms(ms, 1);
+        exit(130);
+    }
+    if (!line)
+        exit_heredoc(ms, line, pipe_fd[1]);
+    if (expand)
+        new = expand_heredoc(line, ms);
+    else
+        new = ft_strdup(line);
+    if (ft_strcmp(line, tmp->next->value) == 0 && close(pipe_fd[1]) == 0)
+    {
+        free(new);
+        return 0;
+    }
+    write(pipe_fd[1], new, ft_strlen(new));
+    write(pipe_fd[1], "\n", 1);
+    free(new);
+    free(line);
+    return 1;
+}
+
+
+void dad_heredoc_thing(int pipe_fd, t_ms *ms)
 {
     int status;
     
@@ -337,9 +340,8 @@ void dad_heredoc_thing(int pipe_fd[2], t_ms *ms)
         ms->last_exit_status = WEXITSTATUS(status);
     else if (WIFSIGNALED(status))
         ms->last_exit_status = 128 + WTERMSIG(status);
-    close(pipe_fd[1]);
     setup_signals();
-    add_heredoc(ms, pipe_fd[0]);
+    add_heredoc(ms, pipe_fd);
     if (ms->last_exit_status == 130)
     {
         ms->err = 1;
@@ -360,15 +362,19 @@ void fork_heredoc(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     }
     if (pid == 0)
     {
-        setup_heredoc_signals(); /*mamoon signal*/
-            while (heredoc_loop(tmp, pipe_fd, expand, ms));
-        close(pipe_fd[1]);
         close(pipe_fd[0]);
+        setup_heredoc_signals(); /*mamoon signal*/
+        while (heredoc_loop(tmp, pipe_fd, expand, ms))
+            ;
+        close_and_free_heredoc(ms);
         ft_free_ms(ms, 1);
         exit (0);
     }
     else
-        dad_heredoc_thing(pipe_fd, ms);
+    {
+        close(pipe_fd[1]);
+        dad_heredoc_thing(pipe_fd[0], ms);
+    }
 }
 
 void fill_here_doc(t_ms *ms)
@@ -456,6 +462,8 @@ void find_in_or_out(t_token *tmp, t_cmd *cmd, t_heredoc **t)
         open_append(tmp, cmd);
     else if (tmp->type == HEREDOC)
     {
+        if (cmd->fd_in != -1)
+            close(cmd->fd_in);
         cmd->fd_in = (*t)->fd;
         *t = (*t)->n;
     }
