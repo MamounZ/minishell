@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/04 11:04:32 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/04 13:47:14 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -461,6 +461,12 @@ void find_in_or_out(t_token *tmp, t_cmd *cmd, t_heredoc **t)
     }
 }
 
+void cmd_error(t_cmd *cmd, t_ms *ms)
+{
+    free_cmds(cmd);
+    ft_free_ms(ms, 1);
+    exit(1);
+}
 void fill_cmds_file(t_ms *ms)
 {
     t_token *tmp;
@@ -483,11 +489,7 @@ void fill_cmds_file(t_ms *ms)
             tmp = tmp->next;
         }
         else if (tmp->type != PIPE && add_token(&tm, new_token(ft_strdup(tmp->value), tmp->type), ms) == 0)
-        {
-            free_cmds(cmd);
-            ft_free_ms(ms, 1);
-            exit(1);
-        }
+            cmd_error(cmd, ms);
         if (tmp->type == PIPE || !tmp->next)
             next_cmd(&tm, &cmd, ms, tmp);
         tmp = tmp->next;
