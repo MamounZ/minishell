@@ -6,11 +6,85 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/03 21:16:05 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/04 11:04:32 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+int len_handle_special_dollar_cases_here(char *input, t_expand *e, t_ms *ms)
+{
+	if (input[e->i] == '0')
+	{
+		e->size += ft_strlen(ms->argv[0]);
+		e->i++;
+		return (1);
+	}
+	else if (input[e->i] >= '1' && input[e->i] <= '9')
+	{
+		e->i++;
+		return (1);
+	}
+	else if (input[e->i] == '?')
+	{
+		e->exit_status = ft_itoa(ms->last_exit_status);
+        e->size += ft_strlen(e->exit_status);
+		free(e->exit_status);
+		e->i++;
+		return (1);
+	}
+	return (0);
+}
+
+int len_handle_variable_expansion_heredoc(char *input, t_expand *e, t_ms *ms)
+{
+    if (is_valid_var_char(input[e->i]))
+    {
+        e->j = 0;
+        while (is_valid_var_char(input[e->i]))
+            e->var_name[e->j++] = input[e->i++];
+        e->var_name[e->j] = '\0';
+        e->value = ft_getenv(e->var_name, ms);
+        if (e->value)
+            e->size += ft_strlen(e->value);
+        ft_memset(e->var_name, 0, sizeof(e->var_name));
+        return (1);
+    }
+    return (0);
+}
+
+void len_handle_plain_dollar(char *input, t_expand *e)
+{
+    e->size++;
+    if (input[e->i])
+    {
+        e->size++;
+        e->i++;
+    }
+}
+
+int len_heredoc_exp(t_expand *e, char *input, t_ms *ms)
+{
+    while (input[e->i])
+    {
+        if (input[e->i] == '$' && input[e->i + 1])
+        {
+            e->i++;
+            if (len_handle_special_dollar_cases_here(input, e, ms))
+                continue;
+            if (len_handle_variable_expansion_heredoc(input, e, ms))
+                continue;
+            len_handle_plain_dollar(input, e);
+        }
+        else
+        {
+            e->size++;
+            e->i++;
+        }
+    }
+    e->i = 0;
+    return (e->size);
+}
 
 void add_heredoc(t_ms *ms, int fd)
 {
@@ -182,7 +256,7 @@ char	*expand_heredoc(char *input, t_ms *ms)
     t_expand e;
 
     ft_bzero(&e, sizeof(e));
-    e.expanded = malloc(10000);
+    e.expanded = malloc(len_heredoc_exp(&e, input, ms) + 1);
     if (!e.expanded)
         return NULL;
     e.expanded[0] = '\0';
