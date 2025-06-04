@@ -6,7 +6,7 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 22:06:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/04 16:24:36 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/04 19:33:10 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,32 +18,31 @@ char *ft_strjoin_free(char *s1, char *s2)
 
 	if (!s1 || !s2)
 		return (NULL);
-	joined_str = ft_strjoin(s1, s2); // Standard string join function
-	free(s1); // Free the first string
+	joined_str = ft_strjoin(s1, s2);
+	free(s1);
 	return (joined_str);
 }
 
 void set_env_value(char *var, char *value, t_ms *ms)
 {
-	int i = 0;
+	int i;
+	int len;
 	char *new_var;
-	int len = ft_strlen(var);
 
-	// Construct "VAR=VALUE" string
+	i = 0;
+	len = ft_strlen(var);
 	new_var = ft_strjoin(var, "=");
-	new_var = ft_strjoin_free(new_var, value); // Append value (freeing old memory)
-	// Search for existing variable in envp_cpy
+	new_var = ft_strjoin_free(new_var, value);
 	while (ms->envp_cpy[i])
 	{
 		if (ft_strncmp(ms->envp_cpy[i], var, len) == 0 && ms->envp_cpy[i][len] == '=')
 		{
 			free(ms->envp_cpy[i]);
-			ms->envp_cpy[i] = new_var; // Replace existing variable
+			ms->envp_cpy[i] = new_var;
 			return;
 		}
 		i++;
 	}
-	// If variable doesn't exist, add it
 	ms->envp_cpy = realloc_env(ms->envp_cpy, new_var);
 	free(new_var);
 }
@@ -100,18 +99,16 @@ void ft_cd(char **args, t_ms *ms)
 	char *dir;
 
 	if (handle_too_many_args(args, ms))
-		return;
-
+		return ;
 	oldpwd = getcwd(NULL, 0);
 	dir = get_target_dir(args, ms, oldpwd);
 	if (!dir)
-		return;
-
+		return ;
 	if (chdir(dir) != 0)
 	{
 		perror("minishell: cd");
 		free(oldpwd);
-		return;
+		return ;
 	}
 	newpwd = getcwd(NULL, 0);
 	set_env_value("OLDPWD", oldpwd, ms);
