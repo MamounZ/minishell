@@ -2,9 +2,9 @@ LIBFT_L = -L./libft -lft
 READ_LINE_L = -lreadline
 LIBFT_PATH = ./libft
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g 
+CFLAGS = -Wall -Wextra -Werror -g
 NAME = minishell
-SRCS = main.c envp_copy.c expander.c builtin_cmd.c tokenizer.c tokenizer_utiltes.c export.c unset.c pwd.c cd.c signals.c exu.c exu_2.c mang_pip.c  exit.c#error_exit.c
+SRCS = main.c envp_copy.c expander.c builtin_cmd.c tokenizer.c tokenizer_utiltes.c export.c unset.c pwd.c cd.c signals.c exu.c exu_2.c mang_pip.c  exit.c
 
 OBJS = $(SRCS:.c=.o)
 

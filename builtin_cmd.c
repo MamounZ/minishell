@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtin_cmd.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 22:05:32 by mazaid            #+#    #+#             */
-/*   Updated: 2025/05/19 22:16:34 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/04 19:29:22 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,20 @@
 
 void ft_echo(char **args)
 {
-	int i = 1;
-	int newline = 1;
+	int i;
+	int j;
+	int newline;
 
-	// Check for -n flag
+	i = 1;
+	newline = 1;
 	while (args[i] && args[i][0] == '-' && args[i][1] == 'n')
 	{
-		int j = 1;
-		while (args[i][j] == 'n') // Ensure all characters after '-' are 'n'
+		j = 1;
+		while (args[i][j] == 'n')
 			j++;
-		if (args[i][j] != '\0') // If there's a non-'n' character, stop checking
+		if (args[i][j] != '\0')
 			break;
-		newline = 0; // Valid -n flag detected
+		newline = 0;
 		i++;
 	}
 	while (args[i])
@@ -41,7 +43,9 @@ void ft_echo(char **args)
 
 void ft_env(t_ms *ms)
 {
-	int i = 0;
+	int i;
+
+	i = 0;
 	while (ms->envp_cpy[i])
 	{
 		ft_printf("%s\n", ms->envp_cpy[i]);

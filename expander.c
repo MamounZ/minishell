@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/04 18:56:00 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/04 20:24:00 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,21 +19,6 @@ int	is_valid_var_char(char c)
 	return (0);
 }
 
-// char	*get_env_value(char *var, t_ms *ms)
-// {
-// 	int	i;
-// 	int	len;
-
-// 	i = 0;
-// 	len = ft_strlen(var);
-// 	while (ms->envp_cpy[i])
-// 	{
-// 		if (ft_strncmp(ms->envp_cpy[i], var, len) == 0 && ms->envp_cpy[i][len] == '=')
-// 			return (ft_strdup(ms->envp_cpy[i] + len + 1));
-// 		i++;
-// 	}
-// 	return (ft_strdup(""));
-// }
 char *ft_getenv(char *var, t_ms *ms)
 {
 	int i;
