@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 15:43:36 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 16:06:24 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ static void	copy_value(t_expand *e)
 		z++;
 	}
 }
+
 int	handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 {
 	if (input[e->i] == '0')

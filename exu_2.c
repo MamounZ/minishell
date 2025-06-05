@@ -6,17 +6,17 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/29 19:05:25 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/04 20:32:29 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 16:07:40 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *tokenize_to_char(t_token *tokens)
+char	*tokenize_to_char(t_token *tokens)
 {
-	char *str;
-	int len;
-	t_token *tmp;
+	char	*str;
+	int		len;
+	t_token	*tmp;
 
 	len = 0;
 	tmp = tokens;

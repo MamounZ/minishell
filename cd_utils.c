@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cd_utils.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 14:22:48 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 15:56:00 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 16:05:02 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,12 @@ char	*ft_strjoin_free(char *s1, char *s2)
 	return (joined_str);
 }
 
+void	set_env_value_exit(t_ms *ms)
+{
+	ft_free_ms(ms, 1);
+	exit(1);
+}
+
 void	set_env_value(char *var, char *value, t_ms *ms)
 {
 	int		i;
@@ -34,10 +40,7 @@ void	set_env_value(char *var, char *value, t_ms *ms)
 	new_var = ft_strjoin(var, "=");
 	new_var = ft_strjoin_free(new_var, value);
 	if (!new_var)
-	{
-		ft_free_ms(ms, 1);
-		exit(1);
-	}
+		set_env_value_exit(ms);
 	while (ms->envp_cpy[i])
 	{
 		if (ft_strncmp(ms->envp_cpy[i], var, len) == 0

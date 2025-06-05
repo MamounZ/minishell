@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 14:36:48 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 15:43:43 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 16:07:00 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int	is_valid_var_char(char c)
 	return (0);
 }
 
-void exit_fail_itoa(t_ms *ms)
+void	exit_fail_itoa(t_ms *ms)
 {
 	close_cmds(ms->cmds);
 	ft_free_ms(ms, 1);

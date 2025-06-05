@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander_len.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
+/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 14:33:06 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 15:56:46 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 16:06:44 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ int	len_handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 	}
 	else if (input[e->i] == '?')
 	{
-		e->size += ft_numlen(ms->last_exit_status); // yaman -> do ft_numlen
+		e->size += ft_numlen(ms->last_exit_status);
 		e->i++;
 		return (1);
 	}
