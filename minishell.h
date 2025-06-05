@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 11:26:17 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 14:41:53 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,4 +119,8 @@ char *tokenize_to_char(t_token *tokens);
 void free_cmds(t_cmd *cmds);
 int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms);
 void setup_heredoc_signals(void);
+void set_env_value(char *var, char *value, t_ms *ms);
+int len_handle_quotes(char *input, t_expand *e);
+int handle_quotes(char *input, t_expand *e);
+int ft_lenexpand(char *input, t_ms *ms);
 #endif
