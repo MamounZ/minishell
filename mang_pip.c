@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/05 10:11:41 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 11:24:31 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,7 @@ int len_handle_special_dollar_cases_here(char *input, t_expand *e, t_ms *ms)
 	}
 	else if (input[e->i] == '?')
 	{
-		e->exit_status = ft_itoa(ms->last_exit_status);
-        e->size += ft_strlen(e->exit_status);
-		free(e->exit_status);
+        e->size += ft_numlen(ms->last_exit_status);
 		e->i++;
 		return (1);
 	}

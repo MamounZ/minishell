@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 09:44:05 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 11:26:17 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,8 @@ typedef struct s_expand
 } t_expand;
 
 void ft_free_ms(t_ms *ms, int last);
+void close_cmds(t_cmd *cmds);
+int ft_numlen(int n);
 void free_doc(t_heredoc *doc);
 void copy_env(char **envp, t_ms *ms);
 void ft_exit(char **args, t_ms *ms);

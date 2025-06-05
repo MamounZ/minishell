@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/04 20:24:00 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 11:25:45 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,13 @@ int len_handle_quotes(char *input, t_expand *e)
 	return (0);
 }
 
+void exit_fail_itoa(t_ms *ms)
+{
+	close_cmds(ms->cmds);
+	ft_free_ms(ms, 1);
+	exit (1);
+}
+
 int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 {
 	if (input[e->i] == '0')
@@ -123,6 +130,8 @@ int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 	else if (input[e->i] == '?')
 	{
 		e->exit_status = ft_itoa(ms->last_exit_status);
+		if (!e->exit_status)
+			exit_fail_itoa(ms);
 		ft_strcat(e->expanded, e->exit_status);
 		free(e->exit_status);
 		e->i++;
@@ -131,9 +140,28 @@ int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 	return (0);
 }
 
+int ft_numlen(int num)
+{
+	int len;
+
+	len = 0;
+	if (num == 0)
+		return (1);
+	if (num < 0)
+	{
+		len++;
+		num = -num;
+	}
+	while (num > 0)
+	{
+		num /= 10;
+		len++;
+	}
+	return (len);
+}
+
 int len_handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 {
-	char *exit_status;
 	if (input[e->i] == '0')
 	{
 		e->i++;
@@ -147,9 +175,7 @@ int len_handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 	}
 	else if (input[e->i] == '?')
 	{
-		exit_status = ft_itoa(ms->last_exit_status);
-		e->size += ft_strlen(exit_status); // yaman -> do ft_numlen
-		free(exit_status);
+		e->size += ft_numlen(ms->last_exit_status);
 		e->i++;
 		return (1);
 	}
