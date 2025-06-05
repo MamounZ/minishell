@@ -6,13 +6,34 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 11:28:52 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 15:47:29 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 // checj any quotes in the input
+
+
+int ft_numlen(int n)
+{
+	int len = 0;
+
+	if (n < 0)
+	{
+		len++;
+		n = -n;
+	}
+	if (n == 0)
+		return (1);
+	while (n > 0)
+	{
+		len++;
+		n /= 10;
+	}
+	return (len);
+}
+
 int check_quotes(char *input)
 {
 	int num = 0;
