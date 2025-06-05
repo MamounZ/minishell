@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/05 09:53:28 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 10:11:41 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -640,6 +640,13 @@ void clean_child(t_cmd *tmp, int prev_fd, t_ms *ms)
     ft_free_ms(ms, 1);
 }
 
+void print_not_found(char *cmd)
+{
+    ft_putstr_fd("minishell: ", STDERR_FILENO);
+    ft_putstr_fd(cmd, STDERR_FILENO);
+    ft_putstr_fd(": command not found\n", STDERR_FILENO);
+}
+
 void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
 {
     char *cmd;
@@ -653,8 +660,10 @@ void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
     {
         execve(cmd, tmp->args, ms->envp_cpy);
         perror("execve");
+        free(cmd);
     }
-    free(cmd);
+    else
+        print_not_found(tmp->args[0]);
     clean_child(tmp, prev_fd, ms);
     exit(127);
 }
