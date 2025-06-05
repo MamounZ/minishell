@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   mang_pip_utils3.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 16:21:35 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 17:00:57 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 19:07:41 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	exit_heredoc(t_ms *ms, char *line, int fd)
 	free(line);
 	close_and_free_heredoc(ms);
 	ft_free_ms(ms, 1);
-	exit(1);
+	exit(0);
 }
 
 int	heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)

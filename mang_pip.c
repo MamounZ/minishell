@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   mang_pip.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/05 16:50:11 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 19:23:58 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void	it_is_okay(t_cmd *tmp, int prev_fd, int fd[2], t_ms *ms)
 	if ((!tmp || !tmp->args || !tmp->args[0]))
 	{
 		clean_child(tmp, prev_fd, ms);
-		exit(1);
+		exit(0);
 	}
 	else if (is_builtin(tmp->args[0]))
 	{
