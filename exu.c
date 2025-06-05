@@ -6,18 +6,24 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/05/13 19:24:36 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 09:22:38 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-char *get_cmd_path(char *cmd, t_ms *ms) {
-    char *path; char *tmp; char **paths = ft_split(ft_getenv("PATH", ms), ':'); int i = 0;
-    while (paths[i]) {
+char *get_cmd_path(char *cmd, t_ms *ms)
+{
+    char *path;
+    char *tmp;
+    char **paths = ft_split(ft_getenv("PATH", ms), ':');
+    int i = 0;
+    while (paths[i])
+    {
         tmp = ft_strjoin(paths[i], "/");
         path = ft_strjoin(tmp, cmd);
         free(tmp);
         if (!access(path, F_OK)) {
+            fprintf(stderr, "Command found: %s\n", path);
             free_args(paths);
             return (path);
         }

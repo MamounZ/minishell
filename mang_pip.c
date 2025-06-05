@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/04 17:06:05 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 09:53:28 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -294,7 +294,7 @@ void close_and_free_heredoc(t_ms *ms)
 void exit_heredoc(t_ms *ms, char *line, int fd)
 {
     close(fd);
-    perror("getline");
+    ft_printf("minishell: warning: here-document at line %d delimited by end-of-file (wanted `%s')\n", ms->line_count, ms->tokens->next->value);
     free(line);
     close_and_free_heredoc(ms);
     ft_free_ms(ms, 1);
@@ -307,7 +307,7 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     char    *new;
 
     line = readline("> ");
-    if (g_signal&& close(pipe_fd[1]) == 0)
+    if (++ms->line_count && g_signal && close(pipe_fd[1]) == 0)
     {
         ft_free_ms(ms, 1);
         exit(130);
@@ -321,13 +321,13 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     if (ft_strcmp(line, tmp->next->value) == 0 && close(pipe_fd[1]) == 0)
     {
         free(new);
-        return 0;
+        return (0);
     }
     write(pipe_fd[1], new, ft_strlen(new));
     write(pipe_fd[1], "\n", 1);
     free(new);
     free(line);
-    return 1;
+    return (1);
 }
 
 
@@ -650,8 +650,11 @@ void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
     else
         cmd = get_cmd_path(tmp->args[0], ms);
     if (cmd)
+    {
         execve(cmd, tmp->args, ms->envp_cpy);
-    perror("execve");
+        perror("execve");
+    }
+    free(cmd);
     clean_child(tmp, prev_fd, ms);
     exit(127);
 }

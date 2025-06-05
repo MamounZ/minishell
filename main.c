@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/04 18:43:17 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 09:57:06 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,6 +118,7 @@ void init_ms(t_ms *ms, char **argv, char **envp)
 	ms->argv = argv;
 	ms->last_exit_status = 0;
 	ms->err = 0;
+	ms->line_count = 1;
 	setup_signals();
 }
 
