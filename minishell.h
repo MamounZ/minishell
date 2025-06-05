@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 14:41:53 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 15:44:04 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,4 +123,5 @@ void set_env_value(char *var, char *value, t_ms *ms);
 int len_handle_quotes(char *input, t_expand *e);
 int handle_quotes(char *input, t_expand *e);
 int ft_lenexpand(char *input, t_ms *ms);
+void exit_fail_itoa(t_ms *ms);
 #endif
