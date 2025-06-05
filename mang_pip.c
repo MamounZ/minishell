@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 20:53:29 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/04 17:06:05 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 11:24:31 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,7 @@ int len_handle_special_dollar_cases_here(char *input, t_expand *e, t_ms *ms)
 	}
 	else if (input[e->i] == '?')
 	{
-		e->exit_status = ft_itoa(ms->last_exit_status);
-        e->size += ft_strlen(e->exit_status);
-		free(e->exit_status);
+        e->size += ft_numlen(ms->last_exit_status);
 		e->i++;
 		return (1);
 	}
@@ -294,7 +292,7 @@ void close_and_free_heredoc(t_ms *ms)
 void exit_heredoc(t_ms *ms, char *line, int fd)
 {
     close(fd);
-    perror("getline");
+    ft_printf("minishell: warning: here-document at line %d delimited by end-of-file (wanted `%s')\n", ms->line_count, ms->tokens->next->value);
     free(line);
     close_and_free_heredoc(ms);
     ft_free_ms(ms, 1);
@@ -307,7 +305,7 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     char    *new;
 
     line = readline("> ");
-    if (g_signal&& close(pipe_fd[1]) == 0)
+    if (++ms->line_count && g_signal && close(pipe_fd[1]) == 0)
     {
         ft_free_ms(ms, 1);
         exit(130);
@@ -321,13 +319,13 @@ int heredoc_loop(t_token *tmp, int pipe_fd[2], int expand, t_ms *ms)
     if (ft_strcmp(line, tmp->next->value) == 0 && close(pipe_fd[1]) == 0)
     {
         free(new);
-        return 0;
+        return (0);
     }
     write(pipe_fd[1], new, ft_strlen(new));
     write(pipe_fd[1], "\n", 1);
     free(new);
     free(line);
-    return 1;
+    return (1);
 }
 
 
@@ -640,6 +638,13 @@ void clean_child(t_cmd *tmp, int prev_fd, t_ms *ms)
     ft_free_ms(ms, 1);
 }
 
+void print_not_found(char *cmd)
+{
+    ft_putstr_fd("minishell: ", STDERR_FILENO);
+    ft_putstr_fd(cmd, STDERR_FILENO);
+    ft_putstr_fd(": command not found\n", STDERR_FILENO);
+}
+
 void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
 {
     char *cmd;
@@ -650,8 +655,13 @@ void    child_execve(t_cmd *tmp, int prev_fd, t_ms *ms)
     else
         cmd = get_cmd_path(tmp->args[0], ms);
     if (cmd)
+    {
         execve(cmd, tmp->args, ms->envp_cpy);
-    perror("execve");
+        perror("execve");
+        free(cmd);
+    }
+    else
+        print_not_found(tmp->args[0]);
     clean_child(tmp, prev_fd, ms);
     exit(127);
 }

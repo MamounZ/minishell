@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line_utils.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dkhalil <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/13 00:56:45 by mazaid            #+#    #+#             */
-/*   Updated: 2024/10/02 13:50:50 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 15:27:29 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include "get_next_line.h"
 
 char	*newline_exist(char *str)

@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
 /*   Updated: 2025/06/05 14:48:22 by mazaid           ###   ########.fr       */
@@ -30,7 +30,6 @@ static void	copy_value(t_expand *e)
 		z++;
 	}
 }
-
 int	handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 {
 	if (input[e->i] == '0')
@@ -47,6 +46,8 @@ int	handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 	else if (input[e->i] == '?')
 	{
 		e->exit_status = ft_itoa(ms->last_exit_status);
+		if (!e->exit_status)
+			exit_fail_itoa(ms);
 		ft_strcat(e->expanded, e->exit_status);
 		free(e->exit_status);
 		e->i++;

@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:29:07 by mazaid            #+#    #+#             */
 /*   Updated: 2025/06/05 14:41:53 by mazaid           ###   ########.fr       */
@@ -62,6 +62,7 @@ typedef struct s_ms
     char    **argv;
     int     last_exit_status;
     int     err;
+    int     line_count;
 }		t_ms;
 
 typedef struct s_expand
@@ -78,6 +79,8 @@ typedef struct s_expand
 } t_expand;
 
 void ft_free_ms(t_ms *ms, int last);
+void close_cmds(t_cmd *cmds);
+int ft_numlen(int n);
 void free_doc(t_heredoc *doc);
 void copy_env(char **envp, t_ms *ms);
 void ft_exit(char **args, t_ms *ms);
