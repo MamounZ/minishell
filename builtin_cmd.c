@@ -6,17 +6,17 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 22:05:32 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/04 19:29:22 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 14:19:22 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void ft_echo(char **args)
+void	ft_echo(char **args)
 {
-	int i;
-	int j;
-	int newline;
+	int	i;
+	int	j;
+	int	newline;
 
 	i = 1;
 	newline = 1;
@@ -26,7 +26,7 @@ void ft_echo(char **args)
 		while (args[i][j] == 'n')
 			j++;
 		if (args[i][j] != '\0')
-			break;
+			break ;
 		newline = 0;
 		i++;
 	}
@@ -41,9 +41,9 @@ void ft_echo(char **args)
 		ft_printf("\n");
 }
 
-void ft_env(t_ms *ms)
+void	ft_env(t_ms *ms)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (ms->envp_cpy[i])
@@ -53,19 +53,19 @@ void ft_env(t_ms *ms)
 	}
 }
 
-int is_builtin(char *cmd)
+int	is_builtin(char *cmd)
 {
 	if (!cmd)
-		return 0;
-	if (!ft_strcmp(cmd, "echo") || !ft_strcmp(cmd, "cd") ||
-		!ft_strcmp(cmd, "pwd") || !ft_strcmp(cmd, "export") ||
-		!ft_strcmp(cmd, "unset") || !ft_strcmp(cmd, "env") ||
-		!ft_strcmp(cmd, "exit"))
-		return 1;
-	return 0;
+		return (0);
+	if (!ft_strcmp(cmd, "echo") || !ft_strcmp(cmd, "cd")
+		|| !ft_strcmp(cmd, "pwd") || !ft_strcmp(cmd, "export")
+		|| !ft_strcmp(cmd, "unset") || !ft_strcmp(cmd, "env")
+		|| !ft_strcmp(cmd, "exit"))
+		return (1);
+	return (0);
 }
 
-void execute_builtin(char **args, t_ms *ms)
+void	execute_builtin(char **args, t_ms *ms)
 {
 	ms->last_exit_status = 0;
 	if (!args || !args[0])

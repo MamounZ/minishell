@@ -6,31 +6,31 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 15:28:37 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/02 20:00:17 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 14:53:49 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int g_signal = 0;
+int	g_signal = 0;
 
-void handle_sigint(int sig)
+void	handle_sigint(int sig)
 {
 	(void)sig;
 	ft_printf("\n");
-	rl_on_new_line();		// Move to a new line
-	rl_replace_line("", 0); // Clear current input
-	rl_redisplay();			// Redisplay the prompt
-	g_signal = 1;			// Set the global signal variable
+	rl_on_new_line();
+	rl_replace_line("", 0);
+	rl_redisplay();
+	g_signal = 1;
 }
 
-void setup_signals(void)
+void	setup_signals(void)
 {
-	signal(SIGINT, handle_sigint); // Handle Ctrl-C
-	signal(SIGQUIT, SIG_IGN);	   // Ignore Ctrl-\ (SIGQUIT)
+	signal(SIGINT, handle_sigint);
+	signal(SIGQUIT, SIG_IGN);
 }
 
-void heredoc_sigint(int sig)
+void	heredoc_sigint(int sig)
 {
 	(void)sig;
 	ft_printf("\n");
@@ -38,8 +38,8 @@ void heredoc_sigint(int sig)
 	g_signal = 1;
 }
 
-void setup_heredoc_signals(void)
+void	setup_heredoc_signals(void)
 {
-	signal(SIGINT, heredoc_sigint); // Exit on Ctrl+C
-	signal(SIGQUIT, SIG_IGN);		// Ignore SIGQUIT
+	signal(SIGINT, heredoc_sigint);
+	signal(SIGQUIT, SIG_IGN);
 }

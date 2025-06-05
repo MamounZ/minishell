@@ -6,16 +6,16 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 14:54:36 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/04 20:21:59 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 14:31:13 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-long long ft_atoll(const char *str)
+long long	ft_atoll(const char *str)
 {
-	long long result;
-	int sign;
+	long long	result;
+	int			sign;
 
 	result = 0;
 	sign = 1;
@@ -34,7 +34,8 @@ long long ft_atoll(const char *str)
 	}
 	return (result * sign);
 }
-static int check_long_input(char *str, int j, int i)
+
+static int	check_long_input(char *str, int j, int i)
 {
 	if ((str[j] != '-' && i - j > 19) || ((str[j] == '-' && i - j > 20)))
 		return (0);
@@ -53,10 +54,10 @@ static int check_long_input(char *str, int j, int i)
 	return (1);
 }
 
-int valid_atoll(char *str)
+int	valid_atoll(char *str)
 {
-	int i;
-	int j;
+	int	i;
+	int	j;
 
 	i = 0;
 	j = 0;
@@ -82,7 +83,7 @@ int valid_atoll(char *str)
 
 void	ft_exit(char **args, t_ms *ms)
 {
-	int e;
+	int	e;
 
 	if (args[1] == NULL)
 	{
