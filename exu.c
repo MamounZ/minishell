@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 15:26:55 by yaman-alrif       #+#    #+#             */
-/*   Updated: 2025/06/05 10:48:19 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/05 11:29:28 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,39 +51,3 @@ char *get_cmd_path(char *cmd, t_ms *ms)
     return (NULL);
 }
 
-char **re_aloc_new_2p(char **new, char *var)
-{
-    int i = 0;
-    char **tmp = new;    
-    
-    if (!new)
-    {
-        tmp = malloc(sizeof(char *) * 2);
-        if (!tmp) {
-            perror("malloc");
-            return (NULL);
-        }
-        tmp[0] = ft_strdup(var);
-        tmp[1] = NULL;
-        return (tmp);
-    }
-    while (new[i])
-    {
-        i++;
-    }
-    tmp = malloc(sizeof(char *) * (i + 2));
-    if (!new) {
-        perror("realloc");
-        return (NULL);
-    }
-    i = 0;
-    while (new[i])
-    {
-        tmp[i] = new[i];
-        i++;
-    }
-    tmp[i] = ft_strdup(var);
-    tmp[i + 1] = NULL;
-    free(new);
-    return (tmp);
-}
