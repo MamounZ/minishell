@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dkhalil <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/13 00:48:01 by mazaid            #+#    #+#             */
-/*   Updated: 2024/10/07 00:48:26 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 15:27:39 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include "get_next_line.h"
 
 char	*read_file(int fd, char *left)
