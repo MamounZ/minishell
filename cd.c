@@ -6,48 +6,13 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 22:06:07 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/04 19:33:10 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 14:25:38 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *ft_strjoin_free(char *s1, char *s2)
-{
-	char *joined_str;
-
-	if (!s1 || !s2)
-		return (NULL);
-	joined_str = ft_strjoin(s1, s2);
-	free(s1);
-	return (joined_str);
-}
-
-void set_env_value(char *var, char *value, t_ms *ms)
-{
-	int i;
-	int len;
-	char *new_var;
-
-	i = 0;
-	len = ft_strlen(var);
-	new_var = ft_strjoin(var, "=");
-	new_var = ft_strjoin_free(new_var, value);
-	while (ms->envp_cpy[i])
-	{
-		if (ft_strncmp(ms->envp_cpy[i], var, len) == 0 && ms->envp_cpy[i][len] == '=')
-		{
-			free(ms->envp_cpy[i]);
-			ms->envp_cpy[i] = new_var;
-			return;
-		}
-		i++;
-	}
-	ms->envp_cpy = realloc_env(ms->envp_cpy, new_var);
-	free(new_var);
-}
-
-static int handle_too_many_args(char **args, t_ms *ms)
+static int	handle_too_many_args(char **args, t_ms *ms)
 {
 	if (args[1] && args[2])
 	{
@@ -57,16 +22,17 @@ static int handle_too_many_args(char **args, t_ms *ms)
 	}
 	return (0);
 }
-void handle_missing_env_error(const char *var_name, t_ms *ms, char *oldpwd)
+
+void	handle_missing_env_error(const char *var_name, t_ms *ms, char *oldpwd)
 {
 	printf("minishell: cd: %s not set\n", var_name);
 	ms->last_exit_status = 1;
 	free(oldpwd);
 }
 
-static char *get_target_dir(char **args, t_ms *ms, char *oldpwd)
+static char	*get_target_dir(char **args, t_ms *ms, char *oldpwd)
 {
-	char *dir;
+	char	*dir;
 
 	if (!args[1] || strcmp(args[1], "~") == 0)
 	{
@@ -92,11 +58,11 @@ static char *get_target_dir(char **args, t_ms *ms, char *oldpwd)
 	return (dir);
 }
 
-void ft_cd(char **args, t_ms *ms)
+void	ft_cd(char **args, t_ms *ms)
 {
-	char *oldpwd;
-	char *newpwd;
-	char *dir;
+	char	*oldpwd;
+	char	*newpwd;
+	char	*dir;
 
 	if (handle_too_many_args(args, ms))
 		return ;

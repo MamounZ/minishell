@@ -6,59 +6,15 @@
 /*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 16:44:28 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/04 20:24:00 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 14:48:22 by mazaid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	is_valid_var_char(char c)
+static void	copy_value(t_expand *e)
 {
-	if (ft_isalnum(c) || c == '_')
-		return (1);
-	return (0);
-}
-
-char *ft_getenv(char *var, t_ms *ms)
-{
-	int i;
-	int len;
-
-	if (!var || !ms || !ms->envp_cpy)
-		return (NULL);
-	len = ft_strlen(var);
-	i = 0;
-	while (ms->envp_cpy[i])
-	{
-		if (ft_strncmp(ms->envp_cpy[i], var, len) == 0 && ms->envp_cpy[i][len] == '=')
-			return (ms->envp_cpy[i] + len + 1);
-		i++;
-	}
-	return (NULL);
-}
-
-static void len_copy_value(t_expand *e)
-{
-	int z;
-
-	z = 0;
-	while (e->value[z])
-	{
-		if (e->value[z] == '\"' && !e->in_double_quotes)
-			e->size += 3;
-		else if (e->value[z] == '\"' && e->in_double_quotes)
-			e->size += 5;
-		else if (e->value[z] == '\'' && !e->in_double_quotes)
-			e->size += 3;
-		else
-			e->size += 1;
-		z++;
-	}
-}
-
-static void copy_value(t_expand *e)
-{
-	int z;
+	int	z;
 
 	z = 0;
 	while (e->value[z])
@@ -75,39 +31,7 @@ static void copy_value(t_expand *e)
 	}
 }
 
-int handle_quotes(char *input, t_expand *e)
-{
-	if (input[e->i] == '\'' && !e->in_double_quotes)
-	{
-		e->in_single_quotes = !e->in_single_quotes;
-		ft_strncat(e->expanded, &input[e->i++], 1);
-		return (1);
-	}
-	else if (input[e->i] == '\"' && !e->in_single_quotes)
-	{
-		e->in_double_quotes = !e->in_double_quotes;
-		ft_strncat(e->expanded, &input[e->i++], 1);
-		return (1);
-	}
-	return (0);
-}
-
-int len_handle_quotes(char *input, t_expand *e)
-{
-	if (input[e->i] == '\'' && !e->in_double_quotes)
-	{
-		e->in_single_quotes = !e->in_single_quotes;
-		return (1);
-	}
-	else if (input[e->i] == '\"' && !e->in_single_quotes)
-	{
-		e->in_double_quotes = !e->in_double_quotes;
-		return (1);
-	}
-	return (0);
-}
-
-int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
+int	handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 {
 	if (input[e->i] == '0')
 	{
@@ -131,48 +55,7 @@ int handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
 	return (0);
 }
 
-int len_handle_special_dollar_cases(char *input, t_expand *e, t_ms *ms)
-{
-	char *exit_status;
-	if (input[e->i] == '0')
-	{
-		e->i++;
-		(e->size)++;
-		return (1);
-	}
-	else if (input[e->i] >= '1' && input[e->i] <= '9')
-	{
-		e->i++;
-		return (1);
-	}
-	else if (input[e->i] == '?')
-	{
-		exit_status = ft_itoa(ms->last_exit_status);
-		e->size += ft_strlen(exit_status); // yaman -> do ft_numlen
-		free(exit_status);
-		e->i++;
-		return (1);
-	}
-	return (0);
-}
-
-int len_handle_variable_expansion(char *input, t_expand *e, t_ms *ms)
-{
-	if (is_valid_var_char(input[e->i]))
-	{
-		e->j = 0;
-		while (is_valid_var_char(input[e->i]))
-			e->var_name[e->j++] = input[e->i++];
-		e->var_name[e->j] = '\0';
-		e->value = ft_getenv(e->var_name, ms);
-		if (e->value)
-			len_copy_value(e);
-		ft_memset(e->var_name, 0, sizeof(e->var_name));
-		return (1);
-	}
-	return (0);
-}
-int handle_variable_expansion(char *input, t_expand *e, t_ms *ms)
+int	handle_variable_expansion(char *input, t_expand *e, t_ms *ms)
 {
 	if (is_valid_var_char(input[e->i]))
 	{
@@ -189,78 +72,23 @@ int handle_variable_expansion(char *input, t_expand *e, t_ms *ms)
 	return (0);
 }
 
-int len_handle_unknown_dollar(char *input, t_expand *e)
-{
-	int size;
-	size = 0;
-	if (e->in_double_quotes && (input[e->i] == '\'' || input[e->i] == '\"'))
-	{
-		return (1);
-	}
-	if (input[e->i] == '\'' || input[e->i] == '\"')
-		return (0);
-	size++;
-	if (input[e->i])
-	{
-		size++;
-		e->i++;
-	}
-	return (size);
-}
-
-void handle_unknown_dollar(char *input, t_expand *e)
+void	handle_unknown_dollar(char *input, t_expand *e)
 {
 	if (e->in_double_quotes && (input[e->i] == '\'' || input[e->i] == '\"'))
 	{
 		ft_strncat(e->expanded, "$", 1);
-		return;
+		return ;
 	}
 	if (input[e->i] == '\'' || input[e->i] == '\"')
-		return;
+		return ;
 	ft_strncat(e->expanded, "$", 1);
 	if (input[e->i])
 		ft_strncat(e->expanded, &input[e->i++], 1);
 }
-// void initiate_exp_variables(t_expand *e)
-// {
-// 	e->i = 0;
-// 	e->j = 0;
-// 	e->in_single_quotes = 0;
-// 	e->in_double_quotes = 0;
 
-// }
-
-int ft_lenexpand(char *input, t_ms *ms)
+char	*expand_variables(char *input, t_ms *ms)
 {
-	t_expand e;
-
-	ft_bzero(&e, sizeof(e));
-	while (input[e.i])
-	{
-		if (len_handle_quotes(input, &e))
-			e.size++;
-		if (input[e.i] == '$' && input[e.i + 1] && !e.in_single_quotes)
-		{
-			e.i++;
-			if (len_handle_special_dollar_cases(input, &e, ms))
-				continue;
-			if (len_handle_variable_expansion(input, &e, ms))
-				continue;
-			e.size += len_handle_unknown_dollar(input, &e);
-			continue;
-		}
-		else
-		{
-			e.size++;
-			e.i++;
-		}
-	}
-	return (e.size);
-}
-
-char *expand_variables(char *input, t_ms *ms)
-{
-	t_expand e;
+	t_expand	e;
 
 	ft_bzero(&e, sizeof(e));
 	e.expanded = malloc(ft_lenexpand(input, ms) + 1);
@@ -269,15 +97,15 @@ char *expand_variables(char *input, t_ms *ms)
 	e.expanded[0] = '\0';
 	while (input[e.i])
 	{
-		if(handle_quotes(input, &e))
+		if (handle_quotes(input, &e))
 			continue ;
 		if (input[e.i] == '$' && input[e.i + 1] && !e.in_single_quotes)
 		{
 			e.i++;
 			if (handle_special_dollar_cases(input, &e, ms))
-				continue;
+				continue ;
 			if (handle_variable_expansion(input, &e, ms))
-				continue;
+				continue ;
 			handle_unknown_dollar(input, &e);
 		}
 		else
@@ -319,7 +147,7 @@ char *expand_variables(char *input, t_ms *ms)
 // 			i++;
 // 			continue;
 // 		}
-// 		if (input[i] == '$' && input[i + 1] && !in_single_quotes) // Expand only outside single quotes
+// 		if (input[i] == '$' && input[i + 1] && !in_single_quotes)
 // 		{
 // 			i++;
 // 			if (input[i] == '0')
