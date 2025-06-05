@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cd_utils.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mazaid <mazaid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 14:22:48 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 14:27:39 by mazaid           ###   ########.fr       */
+/*   Updated: 2025/06/05 15:56:00 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,11 @@ void	set_env_value(char *var, char *value, t_ms *ms)
 	len = ft_strlen(var);
 	new_var = ft_strjoin(var, "=");
 	new_var = ft_strjoin_free(new_var, value);
+	if (!new_var)
+	{
+		ft_free_ms(ms, 1);
+		exit(1);
+	}
 	while (ms->envp_cpy[i])
 	{
 		if (ft_strncmp(ms->envp_cpy[i], var, len) == 0
