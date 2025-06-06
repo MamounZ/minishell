@@ -6,7 +6,7 @@
 /*   By: yaman-alrifai <yaman-alrifai@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 15:28:51 by mazaid            #+#    #+#             */
-/*   Updated: 2025/06/05 19:18:09 by yaman-alrif      ###   ########.fr       */
+/*   Updated: 2025/06/06 10:24:10 by yaman-alrif      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	init_ms(t_ms *ms, char **argv, char **envp)
 	ms->argv = argv;
 	ms->last_exit_status = 0;
 	ms->err = 0;
-	ms->line_count = 1;
+	ms->line_count = 0;
 	setup_signals();
 }
 
